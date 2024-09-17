@@ -1,0 +1,6 @@
+@DataLogger_HostAddress = http://localhost:5217
+
+GET {{DataLogger_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
