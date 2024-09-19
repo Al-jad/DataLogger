@@ -13,6 +13,7 @@ public class TanksController(AppDbContext context) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TankData>>> GetTanks()
     {
+        Console.WriteLine("Here");
         return await context.TankData.ToListAsync();
     }
 

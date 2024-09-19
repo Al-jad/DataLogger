@@ -115,6 +115,45 @@ namespace DataLogger.Migrations
                     b.ToTable("Stations");
                 });
 
+            modelBuilder.Entity("DataLogger.Models.TankData", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<float?>("ElectricConductivity")
+                        .HasColumnType("real");
+
+                    b.Property<int>("Record")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("StationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("TimeStamp")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<float?>("TotalVolumePerDay")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("TotalVolumePerHour")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("Turbidity")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("WL")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StationId");
+
+                    b.ToTable("TankData");
+                });
+
             modelBuilder.Entity("DataLogger.Models.PipesData", b =>
                 {
                     b.HasOne("DataLogger.Models.Station", "Station")
@@ -126,9 +165,22 @@ namespace DataLogger.Migrations
                     b.Navigation("Station");
                 });
 
+            modelBuilder.Entity("DataLogger.Models.TankData", b =>
+                {
+                    b.HasOne("DataLogger.Models.Station", "Station")
+                        .WithMany("TankData")
+                        .HasForeignKey("StationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Station");
+                });
+
             modelBuilder.Entity("DataLogger.Models.Station", b =>
                 {
                     b.Navigation("PipesData");
+
+                    b.Navigation("TankData");
                 });
 #pragma warning restore 612, 618
         }

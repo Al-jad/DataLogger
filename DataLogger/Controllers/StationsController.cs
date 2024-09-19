@@ -31,7 +31,7 @@ public class StationsController(AppDbContext context) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Station>> PostStation(Station station)
     {
-        station.TimeStamp = DateTime.Now;
+        station.CreatedAt = DateTime.Now;
         context.Stations.Add(station);
         await context.SaveChangesAsync();
 
