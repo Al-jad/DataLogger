@@ -1,92 +1,64 @@
-using DataLogger.Migrations;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using DataLogger.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
+using DataLogger.DTOs;
+using Microsoft.EntityFrameworkCore;
 
-
-namespace DataLogger.Controllers;
-
-[Route("API/[controller]")]
-[ApiController]
-public class TanksController(AppDbContext context) : ControllerBase
+namespace DataLogger.Controllers
 {
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<TankData>>> GetTanks()
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TanksController(AppDbContext context) : ControllerBase
     {
-        Console.WriteLine("Here");
-        return await context.TankData.ToListAsync();
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<TankData>> GetTanks(int id)
-    {
-        var tankInstance = await context.TankData.FindAsync(id);
-
-        if (tankInstance == null)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TankData>>> GetTanksData()
         {
-            return NotFound();
+            return await context.TankData.ToListAsync();
         }
-
-        return tankInstance;
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<PipesData>> PostTank(TankData tank)
-    {
-        tank.TimeStamp = DateTime.Now;
-        context.TankData.Add(tank);
-        await context.SaveChangesAsync();
-
-        return CreatedAtAction("PostTank", new { id = tank.Id }, tank);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutTank(int id, TankData tank)
-    {
-        if (id != tank.Id)
+        [HttpGet("{id}")]
+        public ActionResult<TankData> GetTankDataById(long id)
         {
-            return BadRequest();
+            var tank = context.TankData.FirstOrDefault(s => s.Id == id);
+            if (tank == null) return NotFound();
+            return Ok(tank);
         }
-
-        context.Entry(tank).State = EntityState.Modified;
-
-        try
+        [HttpPost]
+        public async Task<ActionResult<TankData>> PostTankData([FromBody] TankDataDto tankDto)
         {
+            var tanks = await context.TankData.ToListAsync();
+        
+            var tank = new TankData
+            {
+                Id = tanks.Count > 0 ? tanks.Max(s => s.Id) + 1 : 1,
+                TimeStamp = DateTime.UtcNow,
+                Record = tankDto.Record,
+                TotalVolumePerHour = tankDto.TotalVolumePerHour,
+                TotalVolumePerDay = tankDto.TotalVolumePerDay,
+                Turbidity = tankDto.Turbidity,
+                ElectricConductivity = tankDto.ElectricConductivity
+            };
+        
+            context.TankData.Add(tank);
+            await context.SaveChangesAsync();            
+            return CreatedAtAction(nameof(GetTankDataById), new { id = tank.Id }, tank);
+        } 
+        
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutTankDataById(long id, [FromBody] TankDataDto updatedTankDataDto)
+        {
+            var tank = context.TankData.FirstOrDefault(s => s.Id == id);
+            if (tank == null) return NotFound();
+        
+            tank.Record = updatedTankDataDto.Record;
+            tank.TotalVolumePerHour = updatedTankDataDto.TotalVolumePerHour;
+            tank.TotalVolumePerDay = updatedTankDataDto.TotalVolumePerDay;
+            tank.Turbidity = updatedTankDataDto.Turbidity;
+            tank.ElectricConductivity = updatedTankDataDto.ElectricConductivity;
+            
+            context.Entry(tank).State = EntityState.Modified;
             await context.SaveChangesAsync();
+            return NoContent();
         }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!TankExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTank(int id)
-    {
-        var tank = await context.TankData.FindAsync(id);
-
-        if (tank == null)
-        {
-            return NotFound();
-        }
-
-        context.TankData.Remove(tank);
-        await context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    private bool TankExists(int id)
-    {
-        return context.TankData.Any(e => e.Id == id);
     }
 }

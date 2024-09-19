@@ -4,18 +4,19 @@ using CsvHelper.Configuration;
 
 namespace DataLogger.Models;
 
-public sealed class TankDataMap : ClassMap<PipesData>
+public sealed class TankDataMap : ClassMap<TankData>
 {
     public TankDataMap()
     {
         Map(m => m.TimeStamp).Name("TIMESTAMP");
 
         // Map(m => m.TimeStamp).Convert(row => DateTime.Parse(row.Row.GetField(0)).AddHours(-3).ToUniversalTime());
-        Map(m => m.Discharge).Name("Discharge");
+        
         Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
         Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
         Map(m => m.Turbidity).Name("Turbidity");
         Map(m => m.ElectricConductivity).Name("EC");
+        Map(m => m.WL).Name("WL");
         
         
     }
