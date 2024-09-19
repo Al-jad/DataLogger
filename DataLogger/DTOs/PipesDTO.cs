@@ -2,6 +2,8 @@ namespace DataLogger.DTOs
 {
     public class PipesDataDto
     {
+        public long StationId { get; set; }
+
         public int Record { get; set; }
         public float? Discharge { get; set; }
         public float? TotalVolumePerHour { get; set; }

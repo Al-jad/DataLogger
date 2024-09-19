@@ -7,5 +7,6 @@ namespace DataLogger.Models
         public DbSet<PipesData> PipesData { get; set; }
         public DbSet<Station> Stations { get; set; }
         public DbSet<TankData> TankData { get; set; }
+        
     }
 }
