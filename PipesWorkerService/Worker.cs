@@ -2,7 +2,7 @@ using DataLoggerDatabase.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace DataLogger;
+namespace PipesWorkerService;
 
 public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): BackgroundService
 {

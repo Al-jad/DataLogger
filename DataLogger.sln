@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLogger", "DataLogger\Da
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLoggerDatabase", "DataLoggerDatabase\DataLoggerDatabase.csproj", "{B153D55F-0E24-489B-A5F8-1F65DC6D7C1E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipesWorkerService", "PipesWorkerService\PipesWorkerService.csproj", "{B3569FBC-C8CF-488C-824A-FD2E897956BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{B153D55F-0E24-489B-A5F8-1F65DC6D7C1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B153D55F-0E24-489B-A5F8-1F65DC6D7C1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B153D55F-0E24-489B-A5F8-1F65DC6D7C1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3569FBC-C8CF-488C-824A-FD2E897956BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3569FBC-C8CF-488C-824A-FD2E897956BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3569FBC-C8CF-488C-824A-FD2E897956BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3569FBC-C8CF-488C-824A-FD2E897956BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
