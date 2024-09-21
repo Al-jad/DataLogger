@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace DataLogger.Models
+namespace DataLoggerDatabase.Models
 {
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {

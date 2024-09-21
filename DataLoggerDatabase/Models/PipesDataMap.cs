@@ -2,26 +2,28 @@ using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 
-namespace DataLogger.Models;
+namespace DataLoggerDatabase.Models;
 
-public sealed class TankDataMap : ClassMap<TankData>
+public sealed class PipesDataMap : ClassMap<PipesData>
 {
-    public TankDataMap()
+    public PipesDataMap()
     {
         Map(m => m.TimeStamp).Name("TIMESTAMP");
 
         // Map(m => m.TimeStamp).Convert(row => DateTime.Parse(row.Row.GetField(0)).AddHours(-3).ToUniversalTime());
-        
+        Map(m => m.Discharge).Name("Discharge");
+        Map(m => m.Record).Name("RECORD");
         Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
         Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
+        Map(m => m.Pressure).Name("Pressure");
+        Map(m => m.CL).Name("Chlorine");
         Map(m => m.Turbidity).Name("Turbidity");
         Map(m => m.ElectricConductivity).Name("EC");
-        Map(m => m.WL).Name("WL");
         
         
     }
     
-    public static List<TankData> ParseCsvFile(string filePath)
+    public static List<PipesData> ParseCsvFile(string filePath)
     {
         try
         {
@@ -34,9 +36,9 @@ public sealed class TankDataMap : ClassMap<TankData>
             using (var reader = new StreamReader(filePath))
             using (var csv = new CsvReader(reader, conf))
             {
-                csv.Context.RegisterClassMap<TankDataMap>();
-                var records = csv.GetRecords<TankData>();
-                return records.ToList();
+                csv.Context.RegisterClassMap<PipesDataMap>();
+                var records = csv.GetRecords<PipesData>();
+                return Enumerable.ToList<PipesData>(records);
             }
         }
         catch (HeaderValidationException ex)

@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿#nullable disable
 
-#nullable disable
 
-namespace DataLogger.Migrations
+using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
+namespace DataLoggerDatabase.Migrations
 {
     /// <inheritdoc />
     public partial class Tank : Migration

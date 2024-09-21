@@ -1,5 +1,5 @@
 using DataLogger;
-using DataLogger.Models;
+using DataLoggerDatabase.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

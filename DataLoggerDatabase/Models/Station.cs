@@ -1,5 +1,6 @@
-namespace DataLogger.Models;
 using System.ComponentModel.DataAnnotations;
+
+namespace DataLoggerDatabase.Models;
 
 public class Station
 {

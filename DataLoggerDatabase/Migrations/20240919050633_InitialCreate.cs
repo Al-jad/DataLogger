@@ -1,10 +1,9 @@
-﻿using System;
+﻿#nullable disable
+
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-#nullable disable
-
-namespace DataLogger.Migrations
+namespace DataLoggerDatabase.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

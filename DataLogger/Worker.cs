@@ -1,4 +1,4 @@
-using DataLogger.Models;
+using DataLoggerDatabase.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
