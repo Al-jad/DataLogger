@@ -131,3 +131,10 @@ $RECYCLE.BIN/
 .DS_Store
 
 _NCrunch*
+/.vs/DataLogger/config/applicationhost.config
+/.vs/DataLogger/DesignTimeBuild/.dtbcache.v2
+/.vs/DataLogger/FileContentIndex/076b19ca-74e5-44f7-bd4d-f268a471206c.vsidx
+/.vs/DataLogger/FileContentIndex/0c3731fd-c818-45c3-bc2d-e1ba00b41236.vsidx
+/.vs/DataLogger/v17/.futdcache.v2
+/.vs/DataLogger/v17/DocumentLayout.backup.json
+/.vs/DataLogger/v17/DocumentLayout.json
