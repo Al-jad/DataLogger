@@ -11,6 +11,23 @@ namespace DataLogger.Controllers
     [Route("api/[controller]")]
     public class PipesController(AppDbContext context) : ControllerBase
     {
+        [HttpGet("hourly")]
+        public async Task<IActionResult> GetHourlyRecords(long stationId, DateTime date)
+        {
+            var hourlyRecords = context.PipesData.Where(s => s.StationId == stationId && s.TimeStamp.HasValue && s.TimeStamp.Value.Date == date.Date)
+                .GroupBy(r => new
+                {
+                    r.TimeStamp.Value.Year,
+                    r.TimeStamp.Value.Month,
+                    r.TimeStamp.Value.Day,
+                    r.TimeStamp.Value.Hour
+                    
+                })
+                .Select(g => g.OrderBy(r => r.TimeStamp).FirstOrDefault())
+                .ToList();
+
+            return Ok(hourlyRecords);
+        }
         [HttpGet("Station/{id}")]
         public async Task<ActionResult<IEnumerable<PipesData>>> GetPipeDataByStationId(long id)
         {
