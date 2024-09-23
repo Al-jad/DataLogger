@@ -14,7 +14,7 @@ namespace DataLogger.Controllers
         [HttpGet("hourly")]
         public async Task<IActionResult> GetHourlyRecords(long stationId, DateTime date)
         {
-            var hourlyRecords = context.PipesData.Where(s => s.StationId == stationId && s.TimeStamp.HasValue && s.TimeStamp.Value.Date == date.Date)
+            var hourlyRecords = await context.PipesData.Where(s => s.StationId == stationId && s.TimeStamp.HasValue && s.TimeStamp.Value.Date == date.Date)
                 .GroupBy(r => new
                 {
                     r.TimeStamp.Value.Year,
@@ -24,7 +24,7 @@ namespace DataLogger.Controllers
                     
                 })
                 .Select(g => g.OrderBy(r => r.TimeStamp).FirstOrDefault())
-                .ToList();
+                .ToListAsync();
 
             return Ok(hourlyRecords);
         }
