@@ -19,6 +19,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataLoggerDatabase\DataLoggerDatabase.csproj" />
-    <ProjectReference Include="..\PipesWorkerService\PipesWorkerService.csproj" />
   </ItemGroup>
 </Project>

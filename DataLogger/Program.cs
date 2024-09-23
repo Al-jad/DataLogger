@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
+using DataLogger;
 using DataLoggerDatabase.Models;
 using Microsoft.EntityFrameworkCore;
-using PipesWorkerService;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();

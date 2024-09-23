@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace PipesWorkerService.Helpers
+namespace DataLoggerDatabase.Helpers
 {
     public static class StringUtils
     {
@@ -18,6 +18,3 @@ namespace PipesWorkerService.Helpers
 
     }
 }
-
-
-

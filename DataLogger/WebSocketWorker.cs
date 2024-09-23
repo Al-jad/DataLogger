@@ -1,8 +1,8 @@
+using DataLoggerDatabase.Helpers;
 using DataLoggerDatabase.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using PipesWorkerService.Helpers;
-namespace PipesWorkerService;
+namespace DataLogger;
 
 public class WebSocketWorker : BackgroundService
 {
