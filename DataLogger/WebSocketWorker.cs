@@ -33,7 +33,6 @@ public class WebSocketWorker : BackgroundService
                     .OrderByDescending(x => x.TimeStamp)
                     .FirstOrDefaultAsync(stoppingToken);
                 
-                if (latestPipesData is null) continue;
                 var latestPipesDataSerialized = StringUtils.SerializeObject(latestPipesData);
                 var stationSerialized = StringUtils.SerializeObject(station);
                 await _dataHub.Clients.All.ReceiveStationData(stationSerialized, latestPipesDataSerialized);
