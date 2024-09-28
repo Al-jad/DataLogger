@@ -10,8 +10,8 @@ public class Station
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
     [StringLength(40)] public string? City { get; set; }
     
-    public List<PipesData> PipesData { get; set; } = [];
-    public List<TankData> TankData { get; set; } = [];
+    // public List<PipesData> PipesData { get; set; } = [];
+    // public List<TankData> TankData { get; set; } = [];
     public string? DataFile { get; set; }
     public string? UploadedDataFile { get; set; }
 

@@ -7,7 +7,7 @@ public class PipesData
     public int Record { get; set; }
 
     public long StationId { get; set; }
-    public Station? Station { get; set; }
+    public Station Station { get; set; } = null!;
     public float? Discharge { get; set; }
     public float? TotalVolumePerHour { get; set; }
     public float? TotalVolumePerDay { get; set; }

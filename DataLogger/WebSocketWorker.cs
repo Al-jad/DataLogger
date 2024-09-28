@@ -1,5 +1,7 @@
 using DataLoggerDatabase.Helpers;
 using DataLoggerDatabase.Models;
+using DataLoggerDatabase;
+
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 namespace DataLogger;
@@ -33,9 +35,14 @@ public class WebSocketWorker : BackgroundService
                     .OrderByDescending(x => x.TimeStamp)
                     .FirstOrDefaultAsync(stoppingToken);
                 
-                var latestPipesDataSerialized = StringUtils.SerializeObject(latestPipesData);
-                var stationSerialized = StringUtils.SerializeObject(station);
-                await _dataHub.Clients.All.ReceiveStationData(stationSerialized, latestPipesDataSerialized);
+                // var latestPipesDataSerialized = StringUtils.SerializeObject(latestPipesData);
+                // var stationSerialized = StringUtils.SerializeObject(station);
+                // await _dataHub.Clients.All.ReceiveStationData(stationSerialized, latestPipesDataSerialized);
+                if (latestPipesData != null)
+                {
+                    await _dataHub.Clients.All.ReceiveStationData(station, latestPipesData);
+                }
+
             }
 
 
@@ -60,7 +67,7 @@ public class DataHub : Hub<IDataHub>
         _logger.LogInformation("Sending message: {Message}", message);
         await Clients.All.SendMessage(message);
     }
-    public async Task ReceiveStationData(string station, string latestPipesData)
+    public async Task ReceiveStationData(Station station, PipesData latestPipesData)
     {
         _logger.LogInformation("Sending data for station: {StationId}", station);
         await Clients.All.ReceiveStationData(station, latestPipesData);
@@ -70,6 +77,6 @@ public class DataHub : Hub<IDataHub>
 public interface IDataHub
 {
     Task SendMessage(string message);
-    Task ReceiveStationData(string station, string latestPipesData);
+    Task ReceiveStationData(Station station, PipesData latestPipesData);
 
 }

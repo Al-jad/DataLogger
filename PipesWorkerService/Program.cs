@@ -1,4 +1,4 @@
-using DataLoggerDatabase.Models;
+using DataLoggerDatabase;
 using Microsoft.EntityFrameworkCore;
 using PipesWorkerService;
 

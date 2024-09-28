@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using DataLogger.DTOs;
+using DataLoggerDatabase;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace DataLogger.Controllers

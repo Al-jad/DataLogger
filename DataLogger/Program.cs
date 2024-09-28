@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using DataLogger;
+using DataLoggerDatabase;
 using DataLoggerDatabase.Models;
 using Microsoft.EntityFrameworkCore;
 

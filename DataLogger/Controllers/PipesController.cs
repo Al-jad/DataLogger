@@ -1,4 +1,6 @@
 using DataLoggerDatabase.Models;
+using DataLoggerDatabase;
+
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
