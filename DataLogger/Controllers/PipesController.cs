@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using DataLogger.DTOs;
+using DataLoggerDatabase.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataLogger.Controllers
@@ -11,6 +12,23 @@ namespace DataLogger.Controllers
     [Route("api/[controller]")]
     public class PipesController(AppDbContext context) : ControllerBase
     {
+        [HttpGet(template:"latest_data")]
+        public async Task<IActionResult> GetLatestData()
+        {
+            var stations = await context.Stations.ToListAsync();
+            var result = new List<object>();
+            foreach (var station in stations)
+            {
+                var latestPipesData = await context.PipesData
+                    .Where(x => x.StationId == station.Id)
+                    .OrderByDescending(x => x.TimeStamp)
+                    .FirstOrDefaultAsync();
+
+                if (latestPipesData != null) result.Add(latestPipesData);
+            }
+            return Ok(result);
+        }
+        
         [HttpGet("byMinute")]
         public async Task<IActionResult> GetHourlyRecords(long stationId, DateTime date)
         {
