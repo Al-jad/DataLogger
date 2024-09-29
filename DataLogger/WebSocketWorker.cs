@@ -26,27 +26,14 @@ public class WebSocketWorker : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            var stations = await context.Stations.ToListAsync(stoppingToken);
-            
-            foreach (var station in stations)
-            {
-                var latestPipesData = await context.PipesData
-                    .Where(x => x.StationId == station.Id)
-                    .OrderByDescending(x => x.TimeStamp)
-                    .FirstOrDefaultAsync(stoppingToken);
-                
-                // var latestPipesDataSerialized = StringUtils.SerializeObject(latestPipesData);
-                // var stationSerialized = StringUtils.SerializeObject(station);
-                // await _dataHub.Clients.All.ReceiveStationData(stationSerialized, latestPipesDataSerialized);
-                if (latestPipesData != null)
-                {
-                    await _dataHub.Clients.All.ReceiveStationData(station, latestPipesData);
-                }
+            var latestPipesData = await context.PipesData
+                .Include(x => x.Station)
+                .GroupBy(x => x.StationId)
+                .Select(g => g.OrderByDescending(x => x.TimeStamp).First())
+                .ToListAsync(stoppingToken);
 
-            }
+            await _dataHub.Clients.All.ReceiveStationData(latestPipesData);
 
-
-            
             await Task.Delay(60000, stoppingToken);
 
         }
@@ -67,16 +54,15 @@ public class DataHub : Hub<IDataHub>
         _logger.LogInformation("Sending message: {Message}", message);
         await Clients.All.SendMessage(message);
     }
-    public async Task ReceiveStationData(Station station, PipesData latestPipesData)
+    public async Task ReceiveStationData(List<PipesData> data)
     {
-        _logger.LogInformation("Sending data for station: {StationId}", station);
-        await Clients.All.ReceiveStationData(station, latestPipesData);
+        //_logger.LogInformation("Sending data for station: {StationId}", data.StationId);
+        await Clients.All.ReceiveStationData(data);
     }
-    
+
 }
 public interface IDataHub
 {
     Task SendMessage(string message);
-    Task ReceiveStationData(Station station, PipesData latestPipesData);
-
+    Task ReceiveStationData(List<PipesData> data);
 }
