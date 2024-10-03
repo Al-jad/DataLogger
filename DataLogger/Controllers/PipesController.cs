@@ -14,6 +14,42 @@ namespace DataLogger.Controllers
     [Route("api/[controller]")]
     public class PipesController(AppDbContext context) : ControllerBase
     {
+        [HttpGet("daily_discharge")]
+        public async Task<IActionResult> get_daily_discharge(long id, DateTime startDate, DateTime endDate)
+        {
+            var station = context.Stations.FirstOrDefault(s => s.Id == id);
+            if (station == null) return NotFound();
+            var result = new List<object>();
+            
+            var dailyDischarge = context.PipesData
+                .Where(p => p.StationId == station.Id && p.TimeStamp.HasValue && p.TimeStamp.Value.Date >= startDate.Date && p.TimeStamp.Value.Date <= endDate.Date)
+                .GroupBy(p => new
+                {
+                    p.TimeStamp.Value.Year,
+                    p.TimeStamp.Value.Month,
+                    p.TimeStamp.Value.Day
+                })
+                .Select(g => new
+                {
+                    Date = new DateTime(g.Key.Year, g.Key.Month, g.Key.Day),
+                    Discharge = g.Sum(p => p.Discharge),
+                    price = 500 * g.Sum(p => p.Discharge)
+
+                })
+                .ToList();
+
+            result.Add(new
+            {
+                stationID = station.Id,
+                stationName = station.Name,
+                station.City,
+                DailyDischarge = dailyDischarge
+            });
+
+
+            return Ok(result);
+        }
+      
         [HttpGet(template:"latest_data")]
         public async Task<IActionResult> GetLatestData()
         {
