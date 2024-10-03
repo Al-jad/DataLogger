@@ -3,7 +3,7 @@ namespace DataLoggerDatabase.Models;
 public class PipesData
 {
     public long Id { get; set; }
-    public DateTime? TimeStamp { get; set; }
+    public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
     public int Record { get; set; }
 
     public long StationId { get; set; }

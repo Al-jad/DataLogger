@@ -15,39 +15,33 @@ namespace DataLogger.Controllers
     public class PipesController(AppDbContext context) : ControllerBase
     {
         [HttpGet("daily_discharge")]
-        public async Task<IActionResult> get_daily_discharge(long id, DateTime startDate, DateTime endDate)
+        public async Task<IActionResult> get_daily_discharge(DateTime startDate, DateTime endDate)
         {
-            var station = context.Stations.FirstOrDefault(s => s.Id == id);
-            if (station == null) return NotFound();
-            var result = new List<object>();
             
-            var dailyDischarge = context.PipesData
-                .Where(p => p.StationId == station.Id && p.TimeStamp.HasValue && p.TimeStamp.Value.Date >= startDate.Date && p.TimeStamp.Value.Date <= endDate.Date)
-                .GroupBy(p => new
-                {
-                    p.TimeStamp.Value.Year,
-                    p.TimeStamp.Value.Month,
-                    p.TimeStamp.Value.Day
-                })
+            var dailyDischarge = await context.PipesData
+                .Where(p => p.TimeStamp.Date >= startDate.Date && p.TimeStamp.Date <= endDate.Date)
+                .GroupBy(p => p.StationId)
                 .Select(g => new
                 {
-                    Date = new DateTime(g.Key.Year, g.Key.Month, g.Key.Day),
-                    Discharge = g.Sum(p => p.Discharge),
-                    price = 500 * g.Sum(p => p.Discharge)
-
+                    StationId = g.Key,
+                    DailyDischarge = g.Sum(p => p.Discharge)
                 })
-                .ToList();
+                .Join(
+                    context.Stations,
+                    pd => pd.StationId,
+                    s => s.Id,
+                    (pd, s) => new
+                    {
+                        StationId = s.Id,
+                        StationName = s.Name,
+                        s.City,
+                        pd.DailyDischarge
+                    }
+                )
+                .ToListAsync();
 
-            result.Add(new
-            {
-                stationID = station.Id,
-                stationName = station.Name,
-                station.City,
-                DailyDischarge = dailyDischarge
-            });
+            return Ok(dailyDischarge);
 
-
-            return Ok(result);
         }
       
         [HttpGet(template:"latest_data")]
@@ -66,7 +60,7 @@ namespace DataLogger.Controllers
         public async Task<IActionResult> GetHourlyRecords(long stationId, DateTime date)
         {
             var byMinuteRecords = await context.PipesData.Where(s =>
-                    s.StationId == stationId && s.TimeStamp.HasValue && s.TimeStamp.Value.Date == date.Date)
+                    s.StationId == stationId && s.TimeStamp.Date == date.Date)
                 .OrderByDescending(s => s.TimeStamp).ToListAsync();
         
             return Ok(byMinuteRecords);
@@ -74,30 +68,23 @@ namespace DataLogger.Controllers
         [HttpGet("hourly")]
         public async Task<IActionResult> GetHourlyRecords(long stationID)
         {
-            var result = new List<object>(); // Holds the final result
-
-            // var station = await context.Stations.Where(x => x.Id == stationID).ToListAsync(); 
-
+            
             
             var hourlyRecords = await context.PipesData
-                .Where(p => p.StationId == stationID && p.TimeStamp.HasValue)
+                .Where(p => p.StationId == stationID)
                 .GroupBy(p => new
                 {
-                    p.TimeStamp.Value.Year,
-                    p.TimeStamp.Value.Month,
-                    p.TimeStamp.Value.Day,
-                    p.TimeStamp.Value.Hour
+                    p.TimeStamp.Year,
+                    p.TimeStamp.Month,
+                    p.TimeStamp.Day,
+                    p.TimeStamp.Hour
                 })
                 .Select(g => g.OrderBy(p => p.TimeStamp).FirstOrDefault()) // Select the first record per group
                 .ToListAsync();
             
-            foreach (var record in hourlyRecords)
-            {
-                if (record != null) result.Add(record);
-            }
                 
 
-            return Ok(result); // Return the final result as JSON
+            return Ok(hourlyRecords); // Return the final result as JSON
         }        
         [HttpGet("Station/{id}")]
         public async Task<ActionResult<IEnumerable<PipesData>>> GetPipeDataByStationId(long id)

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataLoggerDatabase.Migrations
 {
     /// <inheritdoc />
-    public partial class restoredfilepaths : Migration
+    public partial class restoredFilepaths : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

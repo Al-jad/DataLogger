@@ -48,7 +48,7 @@ namespace DataLoggerDatabase.Migrations
                     b.Property<long>("StationId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("TimeStamp")
+                    b.Property<DateTime>("TimeStamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<float?>("TotalVolumePerDay")
