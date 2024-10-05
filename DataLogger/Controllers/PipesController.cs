@@ -79,12 +79,10 @@ namespace DataLogger.Controllers
                     p.TimeStamp.Day,
                     p.TimeStamp.Hour
                 })
-                .Select(g => g.OrderBy(p => p.TimeStamp).FirstOrDefault()) // Select the first record per group
+                .Select(g => g.OrderBy(p => p.TimeStamp).FirstOrDefault())
                 .ToListAsync();
             
-                
-
-            return Ok(hourlyRecords); // Return the final result as JSON
+            return Ok(hourlyRecords.OrderByDescending(s => s!.TimeStamp)); // Return the final result as JSON
         }        
         [HttpGet("Station/{id}")]
         public async Task<ActionResult<IEnumerable<PipesData>>> GetPipeDataByStationId(long id)
