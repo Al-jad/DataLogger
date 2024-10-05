@@ -103,6 +103,30 @@ namespace DataLogger.Controllers
             if (pipe == null) return NotFound();
             return Ok(pipe);
         }
+        [HttpPost("bulk")]
+        public async Task<ActionResult<PipesData>> BulkPipesData([FromBody] List<PipesDataDto> pipesData)
+        {
+            var pipes = await context.PipesData.ToListAsync();
+            foreach (var pipe in pipesData.Select(pipeDto => new PipesData
+                     {
+                         // Id = pipes.Count > 0 ? pipes.Max(s => s.Id) + 1 : 1,
+                         TimeStamp = DateTime.UtcNow,
+                         StationId = pipeDto.StationId,
+                         Record = pipeDto.Record,
+                         Discharge = pipeDto.Discharge,
+                         TotalVolumePerHour = pipeDto.TotalVolumePerHour,
+                         TotalVolumePerDay = pipeDto.TotalVolumePerDay,
+                         Pressure = pipeDto.Pressure,
+                         CL = pipeDto.CL,
+                         Turbidity = pipeDto.Turbidity,
+                         ElectricConductivity = pipeDto.ElectricConductivity
+                     }))
+            {
+                context.PipesData.Add(pipe);
+            }
+            await context.SaveChangesAsync();
+            return Ok();
+        }
         [HttpPost]
         public async Task<ActionResult<PipesData>> PostPipesData([FromBody] PipesDataDto pipeDto)
         {
