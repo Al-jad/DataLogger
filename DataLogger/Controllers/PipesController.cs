@@ -1,11 +1,7 @@
 using DataLoggerDatabase.Models;
 using DataLoggerDatabase;
-
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
 using DataLogger.DTOs;
-using DataLoggerDatabase.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataLogger.Controllers
@@ -17,7 +13,6 @@ namespace DataLogger.Controllers
         [HttpGet("daily_discharge")]
         public async Task<IActionResult> get_daily_discharge(DateTime startDate, DateTime endDate)
         {
-            
             var dailyDischarge = await context.PipesData
                 .Where(p => p.TimeStamp.Date >= startDate.Date && p.TimeStamp.Date <= endDate.Date)
                 .GroupBy(p => p.StationId)
@@ -43,8 +38,8 @@ namespace DataLogger.Controllers
             return Ok(dailyDischarge);
 
         }
-      
-        [HttpGet(template:"latest_data")]
+
+        [HttpGet(template: "latest_data")]
         public async Task<IActionResult> GetLatestData()
         {
             var latestPipesData = await context.PipesData
@@ -55,21 +50,22 @@ namespace DataLogger.Controllers
 
             return Ok(latestPipesData);
         }
-        
+
         [HttpGet("byMinute")]
         public async Task<IActionResult> GetHourlyRecords(long stationId, DateTime date)
         {
             var byMinuteRecords = await context.PipesData.Where(s =>
                     s.StationId == stationId && s.TimeStamp.Date == date.Date)
                 .OrderByDescending(s => s.TimeStamp).ToListAsync();
-        
+
             return Ok(byMinuteRecords);
         }
+
         [HttpGet("hourly")]
         public async Task<IActionResult> GetHourlyRecords(long stationID)
         {
-            
-            
+
+
             var hourlyRecords = await context.PipesData
                 .Where(p => p.StationId == stationID)
                 .GroupBy(p => new
@@ -81,9 +77,10 @@ namespace DataLogger.Controllers
                 })
                 .Select(g => g.OrderBy(p => p.TimeStamp).FirstOrDefault())
                 .ToListAsync();
-            
+
             return Ok(hourlyRecords.OrderByDescending(s => s!.TimeStamp)); // Return the final result as JSON
-        }        
+        }
+
         [HttpGet("Station/{id}")]
         public async Task<ActionResult<IEnumerable<PipesData>>> GetPipeDataByStationId(long id)
         {
@@ -101,12 +98,13 @@ namespace DataLogger.Controllers
             if (pipe == null) return NotFound();
             return Ok(pipe);
         }
+
         [HttpPost("bulk")]
-        public async Task<ActionResult> BulkPipesData([FromBody] List<PipesDataDto> pipesData)
+        public async Task<ActionResult<PipesData>> BulkPipesData([FromBody] List<PipesDataDto> pipesData)
         {
-            var newPipesData = pipesData.Select(pipeDto => new PipesData
+            var pipes = pipesData.Select((pipeDto, index) => new PipesData
             {
-                TimeStamp = DateTime.UtcNow,
+                TimeStamp = DateTime.UtcNow.AddMinutes(index),
                 StationId = pipeDto.StationId,
                 Record = pipeDto.Record,
                 Discharge = pipeDto.Discharge,
@@ -118,19 +116,16 @@ namespace DataLogger.Controllers
                 ElectricConductivity = pipeDto.ElectricConductivity
             }).ToList();
 
-            await context.PipesData.AddRangeAsync(newPipesData);
+            context.AddRange(pipes);
             await context.SaveChangesAsync();
 
-            return Ok();
+            return Created();
         }
         [HttpPost]
         public async Task<ActionResult<PipesData>> PostPipesData([FromBody] PipesDataDto pipeDto)
         {
-            var pipes = await context.PipesData.ToListAsync();
-            // var station = context.Stations.FirstOrDefault(s => s.Id == pipeDto.StationId);
             var pipe = new PipesData
             {
-                Id = pipes.Count > 0 ? pipes.Max(s => s.Id) + 1 : 1,
                 TimeStamp = DateTime.UtcNow,
                 StationId = pipeDto.StationId,
                 Record = pipeDto.Record,
@@ -143,12 +138,12 @@ namespace DataLogger.Controllers
                 Turbidity = pipeDto.Turbidity,
                 ElectricConductivity = pipeDto.ElectricConductivity
             };
-        
+
             context.PipesData.Add(pipe);
-            await context.SaveChangesAsync();            
+            await context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetPipesDataById), new { id = pipe.Id }, pipe);
-        } 
-        
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPipesDataById(long id, [FromBody] PipesDataDto updatedPipesDataDto)
         {
@@ -156,7 +151,7 @@ namespace DataLogger.Controllers
             // var station = context.Stations.FirstOrDefault(s => s.Id == updatedPipesDataDto.StationId);
 
             if (pipe == null) return NotFound();
-        
+
             pipe.Record = updatedPipesDataDto.Record;
             pipe.StationId = updatedPipesDataDto.StationId;
             pipe.Discharge = updatedPipesDataDto.Discharge;
@@ -167,7 +162,7 @@ namespace DataLogger.Controllers
             pipe.CL = updatedPipesDataDto.CL;
             pipe.Turbidity = updatedPipesDataDto.Turbidity;
             pipe.ElectricConductivity = updatedPipesDataDto.ElectricConductivity;
-            
+
             context.Entry(pipe).State = EntityState.Modified;
             await context.SaveChangesAsync();
             return NoContent();
