@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("CorsPolicy", builder =>
     {
         builder
-            .WithOrigins("http://localhost:3000", "https://amana.alfakharco.com/")
+            .WithOrigins("http://localhost:3000", "https://amana.alfakharco.com")
             // .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader()
