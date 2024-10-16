@@ -117,7 +117,7 @@ namespace DataLogger.Controllers
         public async Task<IActionResult> GetHourlyRecords(long stationId, DateTime date)
         {
             var byMinuteRecords = await context.PipesData.Where(s =>
-                    s.StationId == stationId && s.TimeStamp.Date == date.Date)
+                    s.StationId == stationId && s.TimeStamp.Date == DateTime.SpecifyKind(date.Date, DateTimeKind.Utc))
                 .OrderByDescending(s => s.TimeStamp).ToListAsync();
 
             return Ok(byMinuteRecords);
