@@ -3,6 +3,7 @@ using DataLoggerDatabase;
 using Microsoft.AspNetCore.Mvc;
 using DataLogger.DTOs;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DataLogger.Controllers
 {
@@ -76,7 +77,7 @@ namespace DataLogger.Controllers
         public async Task<IActionResult> get_daily_discharge(DateTime startDate, DateTime endDate)
         {
             var dailyDischarge = await context.PipesData
-                .Where(p => p.TimeStamp.Date >= startDate.Date && p.TimeStamp.Date <= endDate.Date)
+                .Where(p => p.TimeStamp.Date >= DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc) && p.TimeStamp.Date <= DateTime.SpecifyKind(endDate.Date, DateTimeKind.Utc))
                 .GroupBy(p => p.StationId)
                 .Select(g => new
                 {
