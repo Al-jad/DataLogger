@@ -7,21 +7,21 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql" Version="8.0.4" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+    <PackageReference Include="Npgsql" Version="8.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataLoggerDatabase\DataLoggerDatabase.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.EntityFrameworkCore.Relational">
-      <HintPath>..\..\..\..\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.8\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
+      <HintPath>..\..\..\..\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.11\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\..\..\.nuget\packages\newtonsoft.json\13.0.3\lib\net6.0\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Npgsql.EntityFrameworkCore.PostgreSQL">
-      <HintPath>..\..\..\..\.nuget\packages\npgsql.entityframeworkcore.postgresql\8.0.4\lib\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll</HintPath>
+      <HintPath>..\..\..\..\.nuget\packages\npgsql.entityframeworkcore.postgresql\8.0.5\lib\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

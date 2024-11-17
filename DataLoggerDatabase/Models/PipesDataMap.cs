@@ -12,15 +12,17 @@ public sealed class PipesDataMap : ClassMap<PipesData>
 
         // Map(m => m.TimeStamp).Convert(row => DateTime.Parse(row.Row.GetField(0)).AddHours(-3).ToUniversalTime());
         Map(m => m.Discharge).Name("Discharge");
-        Map(m => m.Record).Name("RECORD");
+        Map(m => m.Discharge2).Name("Discharge2");
+        Map(m => m.Temperature).Name("PTemp_C_Avg");
+        Map(m => m.BatteryVoltage).Name("BattV");
+        Map(m => m.Record).Name("RecNum");
         Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
         Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
-        Map(m => m.Pressure).Name("Pressure");
+        Map(m => m.Pressure).Name("Pressure1_Avg");
+        Map(m => m.Pressure2).Name("Pressure2_Avg");
         Map(m => m.CL).Name("Chlorine");
         Map(m => m.Turbidity).Name("Turbidity");
         Map(m => m.ElectricConductivity).Name("EC");
-        
-        
     }
     
     public static List<PipesData> ParseCsvFile(string filePath)
@@ -33,13 +35,12 @@ public sealed class PipesDataMap : ClassMap<PipesData>
                 // HeaderValidated = null,
                 // MissingFieldFound = null
             };
-            using (var reader = new StreamReader(filePath))
-            using (var csv = new CsvReader(reader, conf))
-            {
-                csv.Context.RegisterClassMap<PipesDataMap>();
-                var records = csv.GetRecords<PipesData>();
-                return Enumerable.ToList<PipesData>(records);
-            }
+            using var reader = new StreamReader(filePath);
+
+            using var csv = new CsvReader(reader, conf);
+            csv.Context.RegisterClassMap<PipesDataMap>();
+            var records = csv.GetRecords<PipesData>();
+            return Enumerable.ToList(records);
         }
         catch (HeaderValidationException ex)
         {
