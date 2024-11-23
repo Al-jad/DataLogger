@@ -8,24 +8,24 @@ public sealed class PipesDataMap : ClassMap<PipesData>
 {
     public PipesDataMap()
     {
-        Map(m => m.TimeStamp).Name("TIMESTAMP");
+        // Map(m => m.TimeStamp).Name("TIMESTAMP");
 
-        // Map(m => m.TimeStamp).Convert(row => DateTime.Parse(row.Row.GetField(0)).AddHours(-3).ToUniversalTime());
-        Map(m => m.Discharge).Name("Discharge");
+        Map(m => m.TimeStamp).Convert(row => DateTime.Parse(row.Row.GetField(0)).AddHours(-3).ToUniversalTime());
+        Map(m => m.Discharge).Name("Discharge1");
         Map(m => m.Discharge2).Name("Discharge2");
         Map(m => m.Temperature).Name("PTemp_C_Avg");
-        Map(m => m.BatteryVoltage).Name("BattV");
+        // Map(m => m.BatteryVoltage).Name("BattV");
         Map(m => m.Record).Name("RecNum");
-        Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
-        Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
+        // Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
+        // Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
         Map(m => m.Pressure).Name("Pressure1_Avg");
         Map(m => m.Pressure2).Name("Pressure2_Avg");
-        Map(m => m.CL).Name("Chlorine");
-        Map(m => m.Turbidity).Name("Turbidity");
-        Map(m => m.ElectricConductivity).Name("EC");
+        // Map(m => m.CL).Name("Chlorine");
+        // Map(m => m.Turbidity).Name("Turbidity");
+        // Map(m => m.ElectricConductivity).Name("EC");
     }
     
-    public static List<PipesData> ParseCsvFile(string filePath)
+    public static List<PipesData> ParseCsvFile(TextReader textReader)
     {
         try
         {
@@ -35,12 +35,10 @@ public sealed class PipesDataMap : ClassMap<PipesData>
                 // HeaderValidated = null,
                 // MissingFieldFound = null
             };
-            using var reader = new StreamReader(filePath);
-
-            using var csv = new CsvReader(reader, conf);
+            using var csv = new CsvReader(textReader, conf);
             csv.Context.RegisterClassMap<PipesDataMap>();
             var records = csv.GetRecords<PipesData>();
-            return Enumerable.ToList(records);
+            return records.ToList();
         }
         catch (HeaderValidationException ex)
         {

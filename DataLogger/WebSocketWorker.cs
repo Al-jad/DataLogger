@@ -33,7 +33,14 @@ public class WebSocketWorker : BackgroundService
                 .ToListAsync(stoppingToken);
 
             await _dataHub.Clients.All.ReceiveStationData(latestPipesData);
-
+            
+            var latestStationStatus = await context.StationStatus
+                .Include(x => x.Station)
+                .GroupBy(x => x.StationId)
+                .Select(g => g.OrderByDescending(x => x.TimeStamp).First())
+                .ToListAsync(stoppingToken);
+            
+            await _dataHub.Clients.All.ReceiveStationStatus(latestStationStatus);
             await Task.Delay(60000, stoppingToken);
 
         }
@@ -59,10 +66,16 @@ public class DataHub : Hub<IDataHub>
         //_logger.LogInformation("Sending data for station: {StationId}", data.StationId);
         await Clients.All.ReceiveStationData(data);
     }
+    public async Task ReceiveStationStatus(List<StationStatus> data)
+    {
+        //_logger.LogInformation("Sending data for station: {StationId}", data.StationId);
+        await Clients.All.ReceiveStationStatus(data);
+    }
 
 }
 public interface IDataHub
 {
     Task SendMessage(string message);
     Task ReceiveStationData(List<PipesData> data);
+    Task ReceiveStationStatus(List<StationStatus> data);
 }

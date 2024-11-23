@@ -36,22 +36,52 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
 
             foreach (var station in stations)
             {
-                if (!File.Exists("C:/Users/user/Projects/DataLogger/source.dat")) continue;
-                var csv = CleanupCsv("C:/Users/user/Projects/DataLogger/source.dat");
-                var pipesData = PipesDataMap.ParseCsvFile(csv);
-                foreach (var data in pipesData)
+                if (File.Exists("C:/Users/user/Projects/DataLogger/source.dat"))
                 {
-                    Console.WriteLine(station.Id);
-                    data.StationId = station.Id;
-                    Console.WriteLine(data.StationId);
-                    data.Station = station;
-                }
-                
-                context.PipesData.AddRange(pipesData);
-                var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
-                
-                if (isSaved && station.UploadedDataFile != null)
-                    File.Move("C:/Users/user/Projects/DataLogger/source.dat", "C:/Users/user/Projects/DataLogger/dest.dat", true);
+                    var pipesDataCsv = CleanupCsv("C:/Users/user/Projects/DataLogger/source.dat");
+                    var pipesCsvContent = string.Join(Environment.NewLine, pipesDataCsv);
+                    using var pipesStringReader = new StringReader(pipesCsvContent);
+                    var pipesData = PipesDataMap.ParseCsvFile(pipesStringReader);
+                    foreach (var data in pipesData)
+                    {
+                        Console.WriteLine(station.Id);
+                        data.StationId = station.Id;
+                        Console.WriteLine(data.StationId);
+                        data.Station = station;
+                    }
+                    context.PipesData.AddRange(pipesData);
+                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
+
+                    if (isSaved && station.UploadedDataFile != null)
+                    {
+                        File.Move("C:/Users/user/Projects/DataLogger/source.dat",
+                            "C:/Users/user/Projects/DataLogger/dest.dat", true);
+                    }
+
+                };
+                if (File.Exists("C:/Users/user/Projects/DataLogger/status.dat"))
+                {
+                    var stationStatusCsv = CleanupCsv("C:/Users/user/Projects/DataLogger/status.dat");
+                    var stationCsvContent = string.Join(Environment.NewLine, stationStatusCsv);
+                    using var stationStringReader = new StringReader(stationCsvContent);
+                    var stationStatus = StationStatusMap.ParseCsvFile(stationStringReader);
+
+                    foreach (var data in stationStatus)
+                    {
+                        Console.WriteLine(station.Id);
+                        data.StationId = station.Id;
+                        Console.WriteLine(data.StationId);
+                        data.Station = station;
+                    }
+                    context.StationStatus.AddRange(stationStatus);
+                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
+
+                    if (isSaved && station.UploadedDataFile != null)
+                    {
+                        File.Move("C:/Users/user/Projects/DataLogger/status.dat",
+                            "C:/Users/user/Projects/DataLogger/status_dest.dat", true);
+                    }
+                };
             }
             // TODO: Tank worker
             _logger.LogInformation("starting to log data in {delay}ms", _appSettings.Delay);
