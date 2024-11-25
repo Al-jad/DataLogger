@@ -7,6 +7,7 @@ public class Station
     public long Id { get; set; }
     public string? ExternalId { get; set; } = null!;
     public required string Name { get; set; }
+    public string? SerialNumber { get; set; }
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
     [StringLength(40)] public string? City { get; set; }
     
@@ -20,6 +21,4 @@ public class Station
     public string? Description { get; set; }
     public string? Notes { get; set; }
     public string? SourceAddress { get; set; }
-    
-    
 }

@@ -15,7 +15,7 @@ public sealed class PipesDataMap : ClassMap<PipesData>
         Map(m => m.Discharge2).Name("Discharge2");
         Map(m => m.Temperature).Name("PTemp_C_Avg");
         // Map(m => m.BatteryVoltage).Name("BattV");
-        Map(m => m.Record).Name("RecNum");
+        Map(m => m.Record).Name("RECORD");
         // Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
         // Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
         Map(m => m.Pressure).Name("Pressure1_Avg");
@@ -25,7 +25,7 @@ public sealed class PipesDataMap : ClassMap<PipesData>
         // Map(m => m.ElectricConductivity).Name("EC");
     }
     
-    public static List<PipesData> ParseCsvFile(TextReader textReader)
+    public static List<PipesData> ParseCsvFile(string filePath)
     {
         try
         {
@@ -35,7 +35,14 @@ public sealed class PipesDataMap : ClassMap<PipesData>
                 // HeaderValidated = null,
                 // MissingFieldFound = null
             };
-            using var csv = new CsvReader(textReader, conf);
+            using var reader = new StreamReader(filePath);
+
+            const int linesToSkip = 1;
+            for (var i = 0; i < linesToSkip; i++)
+            {
+                reader.ReadLine();
+            }
+            using var csv = new CsvReader(reader, conf);
             csv.Context.RegisterClassMap<PipesDataMap>();
             var records = csv.GetRecords<PipesData>();
             return records.ToList();

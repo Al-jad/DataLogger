@@ -1,6 +1,7 @@
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Http;
 
 namespace DataLoggerDatabase.Models;
 
@@ -15,7 +16,7 @@ public sealed class StationStatusMap : ClassMap<StationStatus>
         Map(m => m.StartUpCode).Name("StartUpCode");
     }
 
-    public static List<StationStatus> ParseCsvFile(TextReader textReader)
+    public static List<StationStatus> ParseCsvFile(string filePath)
     {
         try
         {
@@ -25,7 +26,15 @@ public sealed class StationStatusMap : ClassMap<StationStatus>
                 // HeaderValidated = null,
                 // MissingFieldFound = null
             };
-            using var csv = new CsvReader(textReader, conf);
+            using var reader = new StreamReader(filePath);
+
+            const int linesToSkip = 1;
+            for (var i = 0; i < linesToSkip; i++)
+            {
+                reader.ReadLine();
+            }
+
+            using var csv = new CsvReader(reader, conf);
             csv.Context.RegisterClassMap<StationStatusMap>();
             var records = csv.GetRecords<StationStatus>();
             return records.ToList();
