@@ -9,13 +9,12 @@ public sealed class PipesDataMap : ClassMap<PipesData>
     public PipesDataMap()
     {
         // Map(m => m.TimeStamp).Name("TIMESTAMP");
-
-        Map(m => m.TimeStamp).Convert(row => DateTime.Parse(row.Row.GetField(0)).AddHours(-3).ToUniversalTime());
+        Map(m => m.TimeStamp).Convert(row => DateTime.SpecifyKind(DateTime.Parse(row.Row.GetField(0)!).AddHours(-3), DateTimeKind.Utc));
         Map(m => m.Discharge).Name("Discharge1");
         Map(m => m.Discharge2).Name("Discharge2");
         Map(m => m.Temperature).Name("PTemp_C_Avg");
         // Map(m => m.BatteryVoltage).Name("BattV");
-        Map(m => m.Record).Name("RECORD");
+        Map(m => m.Record).Name("RECNBR");
         // Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
         // Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
         Map(m => m.Pressure).Name("Pressure1_Avg");
