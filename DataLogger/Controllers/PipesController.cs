@@ -3,7 +3,6 @@ using DataLoggerDatabase;
 using Microsoft.AspNetCore.Mvc;
 using DataLogger.DTOs;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DataLogger.Controllers
 {
@@ -82,7 +81,8 @@ namespace DataLogger.Controllers
                 .Select(g => new
                 {
                     StationId = g.Key,
-                    DailyDischarge = g.Sum(p => p.Discharge)
+                    DailyDischarge = g.Sum(p => p.Discharge),
+                    DailyDischarge2 = g.Sum(p => p.Discharge2)
                 })
                 .Join(
                     context.Stations,
@@ -99,7 +99,64 @@ namespace DataLogger.Controllers
                 .ToListAsync();
 
             return Ok(dailyDischarge);
+        }
 
+        [HttpGet("hourly")]
+        public async Task<IActionResult> GetHourly(long stationId, int skip, int take = 10)
+        {
+            var query = context.PipesData
+                .Where(x => x.StationId == stationId)
+                .GroupBy(p => new DateTime(p.TimeStamp.Year, p.TimeStamp.Month, p.TimeStamp.Day, p.TimeStamp.Hour, 0, 0))
+                .OrderByDescending(x => x.Key)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    DailyDischarge = g.Sum(p => p.Discharge),
+                    DailyDischarge2 = g.Sum(p => p.Discharge2),
+                    BatteryVoltage = g.Average(p => p.BatteryVoltage),
+                    Temperature = g.Average(p => p.Temperature),
+                    Pressure = g.Average(p => p.Pressure),
+                    Pressure2 = g.Average(p => p.Pressure2),
+                });
+
+            var count = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(x => x.Date)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            return Ok(new { count, data });
+        }
+
+        [HttpGet("daily")]
+        public async Task<IActionResult> GetDaily(long stationId, int skip, int take = 10)
+        {
+            var query = context.PipesData
+                .Where(x => x.StationId == stationId)
+                .GroupBy(p => new DateOnly(p.TimeStamp.Year, p.TimeStamp.Month, p.TimeStamp.Day))
+                .OrderByDescending(x => x.Key)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    DailyDischarge = g.Sum(p => p.Discharge),
+                    DailyDischarge2 = g.Sum(p => p.Discharge2),
+                    BatteryVoltage = g.Average(p => p.BatteryVoltage),
+                    Temperature = g.Average(p => p.Temperature),
+                    Pressure = g.Average(p => p.Pressure),
+                    Pressure2 = g.Average(p => p.Pressure2),
+                });
+
+            var count = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(x => x.Date)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            return Ok(new { count, data });
         }
 
         [HttpGet(template: "latest_data")]
@@ -122,26 +179,6 @@ namespace DataLogger.Controllers
                 .OrderByDescending(s => s.TimeStamp).ToListAsync();
 
             return Ok(byMinuteRecords);
-        }
-
-        [HttpGet("hourly")]
-        public async Task<IActionResult> GetHourlyRecords(long stationID)
-        {
-
-
-            var hourlyRecords = await context.PipesData
-                .Where(p => p.StationId == stationID)
-                .GroupBy(p => new
-                {
-                    p.TimeStamp.Year,
-                    p.TimeStamp.Month,
-                    p.TimeStamp.Day,
-                    p.TimeStamp.Hour
-                })
-                .Select(g => g.OrderBy(p => p.TimeStamp).FirstOrDefault())
-                .ToListAsync();
-
-            return Ok(hourlyRecords.OrderByDescending(s => s!.TimeStamp)); // Return the final result as JSON
         }
 
         [HttpGet("Station/{id}")]
