@@ -10,20 +10,20 @@ public sealed class PipesDataMap : ClassMap<PipesData>
     {
         // Map(m => m.TimeStamp).Name("TIMESTAMP");
         Map(m => m.TimeStamp).Convert(row => DateTime.SpecifyKind(DateTime.Parse(row.Row.GetField(0)!).AddHours(-3), DateTimeKind.Utc));
+        Map(m => m.Record).Name("RECNBR");
+        Map(m => m.BatteryVoltage).Name("BattV");
+        Map(m => m.Temperature).Name("CPUTemp_C");
         Map(m => m.Discharge).Name("Discharge1");
         Map(m => m.Discharge2).Name("Discharge2");
-        Map(m => m.Temperature).Name("PTemp_C_Avg");
-        // Map(m => m.BatteryVoltage).Name("BattV");
-        Map(m => m.Record).Name("RECNBR");
+        Map(m => m.Pressure).Name("Pressure1");
+        Map(m => m.Pressure2).Name("Pressure2");
         // Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
         // Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
-        Map(m => m.Pressure).Name("Pressure1_Avg");
-        Map(m => m.Pressure2).Name("Pressure2_Avg");
         // Map(m => m.CL).Name("Chlorine");
         // Map(m => m.Turbidity).Name("Turbidity");
         // Map(m => m.ElectricConductivity).Name("EC");
     }
-    
+
     public static List<PipesData> ParseCsvFile(string filePath)
     {
         try
