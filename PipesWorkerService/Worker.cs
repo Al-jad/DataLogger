@@ -39,14 +39,25 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
                 if (File.Exists(station.DataFile))
                 {
                     var pipesData = PipesDataMap.ParseCsvFile(station.DataFile);
+
                     foreach (var data in pipesData)
                     {
-                        Console.WriteLine(station.Id);
                         data.StationId = station.Id;
-                        Console.WriteLine(data.StationId);
                         data.Station = station;
                     }
+
                     context.PipesData.AddRange(pipesData);
+                    var pipesData2 = pipesData.ToArray();
+
+                    foreach (var data in pipesData2)
+                    {
+                        data.StationId = 5;
+                        data.Discharge = data.Discharge2;
+                        data.Discharge2 = null;
+                        data.Pressure = null;
+                    }
+
+                    context.PipesData.AddRange(pipesData2);
                     var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
 
                     if (isSaved && station.UploadedDataFile != null)
@@ -55,26 +66,6 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
                             station.UploadedDataFile, true);
                     }
                 };
-                //if (File.Exists("C:/Users/user/Projects/DataLogger/status.dat"))
-                //{
-                //    var stationStatus = StationStatusMap.ParseCsvFile("C:/Users/user/Projects/DataLogger/status.dat");
-
-                //    foreach (var data in stationStatus)
-                //    {
-                //        Console.WriteLine(station.Id);
-                //        data.StationId = station.Id;
-                //        Console.WriteLine(data.StationId);
-                //        data.Station = station;
-                //    }
-                //    context.StationStatus.AddRange(stationStatus);
-                //    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
-
-                //    if (isSaved && station.UploadedDataFile != null)
-                //    {
-                //        File.Move("C:/Users/user/Projects/DataLogger/status.dat",
-                //            "C:/Users/user/Projects/DataLogger/status_dest.dat", true);
-                //    }
-                //};
             }
             // TODO: Tank worker
             _logger.LogInformation("starting to log data in {delay}ms", _appSettings.Delay);

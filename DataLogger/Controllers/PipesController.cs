@@ -1,3 +1,4 @@
+
 using DataLoggerDatabase.Models;
 using DataLoggerDatabase;
 using Microsoft.AspNetCore.Mvc;
@@ -111,8 +112,8 @@ namespace DataLogger.Controllers
                 .Select(g => new
                 {
                     Date = g.Key,
-                    DailyDischarge = g.Sum(p => p.Discharge),
-                    DailyDischarge2 = g.Sum(p => p.Discharge2),
+                    Discharge = g.Sum(p => p.Discharge),
+                    Discharge2 = g.Sum(p => p.Discharge2),
                     BatteryVoltage = g.Average(p => p.BatteryVoltage),
                     Temperature = g.Average(p => p.Temperature),
                     Pressure = g.Average(p => p.Pressure),
@@ -140,12 +141,40 @@ namespace DataLogger.Controllers
                 .Select(g => new
                 {
                     Date = g.Key,
-                    DailyDischarge = g.Sum(p => p.Discharge),
-                    DailyDischarge2 = g.Sum(p => p.Discharge2),
+                    Discharge = g.Sum(p => p.Discharge),
+                    Discharge2 = g.Sum(p => p.Discharge2),
                     BatteryVoltage = g.Average(p => p.BatteryVoltage),
                     Temperature = g.Average(p => p.Temperature),
                     Pressure = g.Average(p => p.Pressure),
                     Pressure2 = g.Average(p => p.Pressure2),
+                });
+
+            var count = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(x => x.Date)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            return Ok(new { count, data });
+        }
+
+        [HttpGet("realtime")]
+        public async Task<IActionResult> GetHourlyRecords(long stationId, int skip, int take = 10)
+        {
+            var query = context.PipesData
+                .Where(x => x.StationId == stationId)
+                .Select(x => new
+                {
+                    Date = x.TimeStamp,
+                    x.Discharge,
+                    x.Discharge2,
+                    x.BatteryVoltage,
+                    x.Temperature,
+                    x.Pressure,
+                    x.Pressure2
+
                 });
 
             var count = await query.CountAsync();

@@ -13,10 +13,10 @@ public sealed class PipesDataMap : ClassMap<PipesData>
         Map(m => m.Record).Name("RECNBR");
         Map(m => m.BatteryVoltage).Name("BattV");
         Map(m => m.Temperature).Name("CPUTemp_C");
-        Map(m => m.Discharge).Name("Discharge1");
-        Map(m => m.Discharge2).Name("Discharge2");
+        Map(m => m.Discharge).Name("Discharge_1");
+        Map(m => m.Discharge2).Name("Discharge_2");
         Map(m => m.Pressure).Name("Pressure1");
-        Map(m => m.Pressure2).Name("Pressure2");
+        //Map(m => m.Pressure2).Name("Pressure2");
         // Map(m => m.TotalVolumePerHour).Name("TotalVol(h)");
         // Map(m => m.TotalVolumePerDay).Name("TotalVol(d)");
         // Map(m => m.CL).Name("Chlorine");
