@@ -49,15 +49,28 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
                     context.PipesData.AddRange(pipesData);
                     var pipesData2 = pipesData.ToArray();
 
+                    var station4Data = new List<PipesData>();
                     foreach (var data in pipesData2)
                     {
-                        data.StationId = 5;
-                        data.Discharge = data.Discharge2;
-                        data.Discharge2 = null;
-                        data.Pressure = null;
+                        var dischargePressureData = new PipesData
+                        {
+                            StationId = 4,
+                            Discharge = data.Discharge,
+                            Pressure = data.Pressure,
+                            TimeStamp = data.TimeStamp
+                        };
+                        station4Data.Add(dischargePressureData);
+
+                        var discharge2Data = new PipesData
+                        {
+                            StationId = 5,
+                            Discharge = data.Discharge2,
+                            TimeStamp = data.TimeStamp
+                        };
+                        station4Data.Add(discharge2Data);
                     }
 
-                    context.PipesData.AddRange(pipesData2);
+                    context.PipesData.AddRange(station4Data);
                     var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
 
                     if (isSaved && station.UploadedDataFile != null)
