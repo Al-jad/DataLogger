@@ -1,5 +1,6 @@
 using DataLoggerDatabase.Models;
 using Microsoft.EntityFrameworkCore;
+using static DataLoggerDatabase.Enums;
 
 namespace DataLoggerDatabase
 {
@@ -15,5 +16,13 @@ namespace DataLoggerDatabase
         public DbSet<Station> Stations { get; set; }
         public DbSet<TankData> TankData { get; set; }
         public DbSet<StationStatus> StationStatus { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.HasPostgresEnum<StationType>();
+        }
     }
+
+    
 }

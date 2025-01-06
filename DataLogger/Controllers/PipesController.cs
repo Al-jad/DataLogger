@@ -1,9 +1,9 @@
-
 using DataLoggerDatabase.Models;
 using DataLoggerDatabase;
 using Microsoft.AspNetCore.Mvc;
 using DataLogger.DTOs;
 using Microsoft.EntityFrameworkCore;
+using static DataLoggerDatabase.Enums;
 
 namespace DataLogger.Controllers
 {
@@ -161,22 +161,56 @@ namespace DataLogger.Controllers
         }
 
         [HttpGet("realtime")]
-        public async Task<IActionResult> GetHourlyRecords(long stationId, int skip, int take = 10)
+        public async Task<IActionResult> GetHourlyRecords(long stationId, ByDuration byDuration, int skip, int take = 10)
         {
-            var query = context.PipesData
-                .Where(x => x.StationId == stationId)
-                .Select(x => new
-                {
-                    Date = x.TimeStamp,
-                    x.Discharge,
-                    x.Discharge2,
-                    x.BatteryVoltage,
-                    x.Temperature,
-                    x.Pressure,
-                    x.Pressure2
+            var baseQuery = context.PipesData
+                .Where(x => x.StationId == stationId);
 
-                });
-
+            var query = byDuration switch
+            {
+                ByDuration.Hour => baseQuery
+                    .GroupBy(p => new DateTime(p.TimeStamp.Year, p.TimeStamp.Month, p.TimeStamp.Day, p.TimeStamp.Hour, 0, 0))
+                    .Select(g => new
+                    {
+                        Date = g.Key,
+                        Discharge = g.Sum(p => p.Discharge),
+                        Discharge2 = g.Sum(p => p.Discharge2),
+                        BatteryVoltage = g.Average(p => p.BatteryVoltage),
+                        Temperature = g.Average(p => p.Temperature),
+                        Pressure = g.Average(p => p.Pressure),
+                        Pressure2 = g.Average(p => p.Pressure2),
+                        WaterLevel = g.Average(p => p.WaterLevel),
+                        WaterQuality = g.Average(p => p.WaterQuality)
+                    }),
+                ByDuration.Day => baseQuery
+                    .GroupBy(p => p.TimeStamp.Date)
+                    .Select(g => new
+                    {
+                        Date = g.Key,
+                        Discharge = g.Sum(p => p.Discharge),
+                        Discharge2 = g.Sum(p => p.Discharge2),
+                        BatteryVoltage = g.Average(p => p.BatteryVoltage),
+                        Temperature = g.Average(p => p.Temperature),
+                        Pressure = g.Average(p => p.Pressure),
+                        Pressure2 = g.Average(p => p.Pressure2),
+                        WaterLevel = g.Average(p => p.WaterLevel),
+                        WaterQuality = g.Average(p => p.WaterQuality)
+                    }),
+                _ => baseQuery
+                    .Select(x => new
+                    {
+                        Date = x.TimeStamp,
+                        x.Discharge,
+                        x.Discharge2,
+                        x.BatteryVoltage,
+                        x.Temperature,
+                        x.Pressure,
+                        x.Pressure2,
+                        x.WaterLevel,
+                        x.WaterQuality
+                    })
+            };
+            
             var count = await query.CountAsync();
 
             var data = await query
@@ -191,13 +225,49 @@ namespace DataLogger.Controllers
         [HttpGet(template: "latest_data")]
         public async Task<IActionResult> GetLatestData()
         {
-            var latestPipesData = await context.PipesData
+            // First, get the latest record for each station
+            var latestRecords = await context.PipesData
                 .Include(x => x.Station)
                 .GroupBy(x => x.StationId)
                 .Select(g => g.OrderByDescending(x => x.TimeStamp).First())
                 .ToListAsync();
 
-            return Ok(latestPipesData);
+            // Then, process each record to calculate hourly and daily totals
+            var result = new List<PipesToReturnDto>();
+            
+            foreach (var record in latestRecords)
+            {
+                var lastHour = record.TimeStamp.AddHours(-1);
+                var lastDay = record.TimeStamp.AddDays(-1);
+
+                var hourlyDischarge = await context.PipesData
+                    .Where(x => x.StationId == record.StationId 
+                        && x.TimeStamp >= lastHour 
+                        && x.TimeStamp <= record.TimeStamp)
+                    .SumAsync(x => x.Discharge ?? 0);
+
+                var dailyDischarge = await context.PipesData
+                    .Where(x => x.StationId == record.StationId 
+                        && x.TimeStamp >= lastDay 
+                        && x.TimeStamp <= record.TimeStamp)
+                    .SumAsync(x => x.Discharge ?? 0);
+
+                result.Add(new PipesToReturnDto
+                {
+                    TimeStamp = record.TimeStamp,
+                    StationId = record.StationId,
+                    Station = record.Station,
+                    Record = record.Record,
+                    DischargeInMinute = record.Discharge,
+                    DischargeInHour = hourlyDischarge,
+                    DischargeInDay = dailyDischarge,
+                    Pressure = record.Pressure,
+                    WaterLevel = record.WaterLevel,
+                    WaterQuality = record.WaterQuality
+                });
+            }
+
+            return Ok(result);
         }
 
         [HttpGet("byMinute")]

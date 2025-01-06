@@ -4,6 +4,7 @@ using DataLoggerDatabase;
 
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using DataLogger.DTOs;
 namespace DataLogger;
 
 public class WebSocketWorker : BackgroundService
@@ -26,13 +27,47 @@ public class WebSocketWorker : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            var latestPipesData = await context.PipesData
+            var latestRecords = await context.PipesData
                 .Include(x => x.Station)
                 .GroupBy(x => x.StationId)
                 .Select(g => g.OrderByDescending(x => x.TimeStamp).First())
                 .ToListAsync(stoppingToken);
 
-            await _dataHub.Clients.All.ReceiveStationData(latestPipesData);
+            var result = new List<PipesToReturnDto>();
+
+            foreach (var record in latestRecords)
+            {
+                var lastHour = record.TimeStamp.AddHours(-1);
+                var lastDay = record.TimeStamp.AddDays(-1);
+
+                var hourlyDischarge = await context.PipesData
+                    .Where(x => x.StationId == record.StationId 
+                        && x.TimeStamp >= lastHour 
+                        && x.TimeStamp <= record.TimeStamp)
+                    .SumAsync(x => x.Discharge ?? 0, stoppingToken);
+
+                var dailyDischarge = await context.PipesData
+                    .Where(x => x.StationId == record.StationId 
+                        && x.TimeStamp >= lastDay 
+                        && x.TimeStamp <= record.TimeStamp)
+                    .SumAsync(x => x.Discharge ?? 0, stoppingToken);
+
+                result.Add(new PipesToReturnDto
+                {
+                    TimeStamp = record.TimeStamp,
+                    StationId = record.StationId,
+                    Station = record.Station,
+                    Record = record.Record,
+                    DischargeInMinute = record.Discharge,
+                    DischargeInHour = hourlyDischarge,
+                    DischargeInDay = dailyDischarge,
+                    Pressure = record.Pressure,
+                    WaterLevel = record.WaterLevel,
+                    WaterQuality = record.WaterQuality
+                });
+            }
+
+            await _dataHub.Clients.All.ReceiveStationData(result);
             
             var latestStationStatus = await context.StationStatus
                 .Include(x => x.Station)
@@ -61,7 +96,7 @@ public class DataHub : Hub<IDataHub>
         _logger.LogInformation("Sending message: {Message}", message);
         await Clients.All.SendMessage(message);
     }
-    public async Task ReceiveStationData(List<PipesData> data)
+    public async Task ReceiveStationData(List<PipesToReturnDto> data)
     {
         //_logger.LogInformation("Sending data for station: {StationId}", data.StationId);
         await Clients.All.ReceiveStationData(data);
@@ -76,6 +111,6 @@ public class DataHub : Hub<IDataHub>
 public interface IDataHub
 {
     Task SendMessage(string message);
-    Task ReceiveStationData(List<PipesData> data);
+    Task ReceiveStationData(List<PipesToReturnDto> data);
     Task ReceiveStationStatus(List<StationStatus> data);
 }

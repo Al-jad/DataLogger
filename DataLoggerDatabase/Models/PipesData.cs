@@ -19,5 +19,7 @@ public class PipesData
     public float? CL { get; set; }
     public float? Turbidity { get; set; }
     public float? ElectricConductivity { get; set; }
+    public float? WaterLevel { get; set; }
+    public float? WaterQuality { get; set; }
     
 }

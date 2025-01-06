@@ -17,9 +17,10 @@ namespace DataLoggerDatabase.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.11")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "station_type", new[] { "pipes", "tank" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("DataLoggerDatabase.Models.PipesData", b =>
@@ -72,6 +73,12 @@ namespace DataLoggerDatabase.Migrations
                     b.Property<float?>("Turbidity")
                         .HasColumnType("real");
 
+                    b.Property<float?>("WaterLevel")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("WaterQuality")
+                        .HasColumnType("real");
+
                     b.HasKey("Id");
 
                     b.HasIndex("StationId");
@@ -121,6 +128,9 @@ namespace DataLoggerDatabase.Migrations
 
                     b.Property<string>("SourceAddress")
                         .HasColumnType("text");
+
+                    b.Property<int>("StationType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("UploadedDataFile")
                         .HasColumnType("text");

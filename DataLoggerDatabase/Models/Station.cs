@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using static DataLoggerDatabase.Enums;
 
 namespace DataLoggerDatabase.Models;
 
@@ -8,6 +9,7 @@ public class Station
     public string? ExternalId { get; set; } = null!;
     public required string Name { get; set; }
     public string? SerialNumber { get; set; }
+    public StationType StationType { get; set; } = StationType.Pipes;
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
     [StringLength(40)] public string? City { get; set; }
     
@@ -15,6 +17,7 @@ public class Station
     // public List<TankData> TankData { get; set; } = [];
     public string? DataFile { get; set; }
     public string? UploadedDataFile { get; set; }
+
 
     public double? Lat { get; set; }
     public double? Lng { get; set; }
