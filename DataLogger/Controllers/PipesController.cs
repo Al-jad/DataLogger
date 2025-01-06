@@ -161,10 +161,11 @@ namespace DataLogger.Controllers
         }
 
         [HttpGet("realtime")]
-        public async Task<IActionResult> GetHourlyRecords(long stationId, ByDuration byDuration, int skip, int take = 10)
+        public async Task<IActionResult> GetHourlyRecords(long stationId, ByDuration byDuration, DateTime fromDate, DateTime toDate, int skip, int take = 10)
         {
             var baseQuery = context.PipesData
-                .Where(x => x.StationId == stationId);
+                .Where(x => x.StationId == stationId)
+                .Where(x => x.TimeStamp.Date >= fromDate.ToUniversalTime() && x.TimeStamp.Date <= toDate.ToUniversalTime());
 
             var query = byDuration switch
             {
