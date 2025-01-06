@@ -19,6 +19,7 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             
+            
             var query = context.Stations.AsQueryable().Any(
                 station => station.SourceAddress == _appSettings.SourceAddress
             );
@@ -31,11 +32,47 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
                 await context.PipesData.Where(x => x.Station == null).ExecuteUpdateAsync(x => x.SetProperty(x => x.StationId, station.Id), stoppingToken);
 
             }
-            
+
             var stations = await context.Stations.Where(x => x.SourceAddress == _appSettings.SourceAddress).ToListAsync(stoppingToken);
 
+            if (File.Exists(_appSettings.StaticStationsFile))
+            {
+                var pipesData = PipesDataMap.ParseCsvFile(_appSettings.StaticStationsFile);
+                var staticStationsData = new List<PipesData>();
+
+                foreach(var data in pipesData)
+                {
+                    var dischargePressureData = new PipesData
+                        {
+                            StationId = 4,
+                            Discharge = data.Discharge,
+                            Pressure = data.Pressure,
+                            TimeStamp = data.TimeStamp
+                        };
+                        staticStationsData.Add(dischargePressureData);
+
+                        var discharge2Data = new PipesData
+                        {
+                            StationId = 5,
+                            Discharge = data.Discharge2,
+                            TimeStamp = data.TimeStamp
+                        };
+                        staticStationsData.Add(discharge2Data);
+                }
+                    context.PipesData.AddRange(staticStationsData);
+                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
+
+                    if (isSaved && _appSettings.StaticStationsUploadedFile != null)
+                    {
+                        File.Move(_appSettings.StaticStationsFile,
+                            _appSettings.StaticStationsUploadedFile, true);
+                    }
+
+            }
+            
             foreach (var station in stations)
             {
+                if (station.Id == 4 || station.Id == 5) continue;
                 if (File.Exists(station.DataFile))
                 {
                     var pipesData = PipesDataMap.ParseCsvFile(station.DataFile);
@@ -47,30 +84,6 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
                     }
 
                     context.PipesData.AddRange(pipesData);
-                    var pipesData2 = pipesData.ToArray();
-
-                    var station4Data = new List<PipesData>();
-                    foreach (var data in pipesData2)
-                    {
-                        var dischargePressureData = new PipesData
-                        {
-                            StationId = 4,
-                            Discharge = data.Discharge,
-                            Pressure = data.Pressure,
-                            TimeStamp = data.TimeStamp
-                        };
-                        station4Data.Add(dischargePressureData);
-
-                        var discharge2Data = new PipesData
-                        {
-                            StationId = 5,
-                            Discharge = data.Discharge2,
-                            TimeStamp = data.TimeStamp
-                        };
-                        station4Data.Add(discharge2Data);
-                    }
-
-                    context.PipesData.AddRange(station4Data);
                     var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
 
                     if (isSaved && station.UploadedDataFile != null)
@@ -92,4 +105,6 @@ internal class AppSettings
     public List<Station> Stations { get; set; } = [];
     public required string SourceAddress { get; init; }
     public int Delay { get; set; }
+    public string? StaticStationsFile { get; set; }
+    public string? StaticStationsUploadedFile { get; set; }
 }
