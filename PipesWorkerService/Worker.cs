@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace PipesWorkerService;
 
-public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): BackgroundService
+public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider) : BackgroundService
 {
     private readonly AppSettings? _appSettings = JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText("appsettings.json"));
     private readonly ILogger<Worker> _logger = logger;
@@ -18,8 +18,8 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            
-            
+
+
             var query = context.Stations.AsQueryable().Any(
                 station => station.SourceAddress == _appSettings.SourceAddress
             );
@@ -40,59 +40,72 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider): B
                 var pipesData = PipesDataMap.ParseCsvFile(_appSettings.StaticStationsFile);
                 var staticStationsData = new List<PipesData>();
 
-                foreach(var data in pipesData)
+                foreach (var data in pipesData)
                 {
                     var dischargePressureData = new PipesData
-                        {
-                            StationId = 4,
-                            Discharge = data.Discharge,
-                            Pressure = data.Pressure,
-                            TimeStamp = data.TimeStamp
-                        };
-                        staticStationsData.Add(dischargePressureData);
+                    {
+                        StationId = 4,
+                        Discharge = data.Discharge,
+                        Pressure = data.Pressure,
+                        TimeStamp = data.TimeStamp
+                    };
+                    staticStationsData.Add(dischargePressureData);
 
-                        var discharge2Data = new PipesData
-                        {
-                            StationId = 5,
-                            Discharge = data.Discharge2,
-                            TimeStamp = data.TimeStamp
-                        };
-                        staticStationsData.Add(discharge2Data);
+                    var discharge2Data = new PipesData
+                    {
+                        StationId = 5,
+                        Discharge = data.Discharge2,
+                        TimeStamp = data.TimeStamp
+                    };
+                    staticStationsData.Add(discharge2Data);
                 }
-                    context.PipesData.AddRange(staticStationsData);
-                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
+                context.PipesData.AddRange(staticStationsData);
+                var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
 
-                    if (isSaved && _appSettings.StaticStationsUploadedFile != null)
-                    {
-                        File.Move(_appSettings.StaticStationsFile,
-                            _appSettings.StaticStationsUploadedFile, true);
-                    }
-
-            }
-            
-            foreach (var station in stations)
-            {
-                if (station.Id == 4 || station.Id == 5) continue;
-                if (File.Exists(station.DataFile))
+                if (isSaved && _appSettings.StaticStationsUploadedFile != null)
                 {
-                    var pipesData = PipesDataMap.ParseCsvFile(station.DataFile);
-
-                    foreach (var data in pipesData)
-                    {
-                        data.StationId = station.Id;
-                        data.Station = station;
-                    }
-
-                    context.PipesData.AddRange(pipesData);
-                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
-
-                    if (isSaved && station.UploadedDataFile != null)
-                    {
-                        File.Move(station.DataFile,
-                            station.UploadedDataFile, true);
-                    }
-                };
+                    File.Move(_appSettings.StaticStationsFile,
+                        _appSettings.StaticStationsUploadedFile, true);
+                }
             }
+
+            if (File.Exists(_appSettings.StaticNorthTankFile))
+            {
+                var pipesData = PipesDataMap.ParseCsvFile(_appSettings.StaticNorthTankFile);
+                foreach (var item in pipesData)
+                {
+                    item.StationId = 6;
+                }
+                context.PipesData.AddRange(pipesData);
+                var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
+
+                if (isSaved && _appSettings.StaticNorthTankUploadedFile != null)
+                    File.Move(_appSettings.StaticNorthTankFile, _appSettings.StaticNorthTankUploadedFile, true);
+            }
+
+            //foreach (var station in stations)
+            //{
+            //    if (station.Id == 4 || station.Id == 5) continue;
+            //    if (File.Exists(station.DataFile))
+            //    {
+            //        var pipesData = PipesDataMap.ParseCsvFile(station.DataFile);
+
+            //        foreach (var data in pipesData)
+            //        {
+            //            data.StationId = station.Id;
+            //            data.Station = station;
+            //        }
+
+            //        context.PipesData.AddRange(pipesData);
+            //        var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
+
+            //        if (isSaved && station.UploadedDataFile != null)
+            //        {
+            //            File.Move(station.DataFile,
+            //                station.UploadedDataFile, true);
+            //        }
+            //    };
+            //}
             // TODO: Tank worker
             _logger.LogInformation("starting to log data in {delay}ms", _appSettings.Delay);
             await Task.Delay(_appSettings.Delay, stoppingToken);
@@ -107,4 +120,6 @@ internal class AppSettings
     public int Delay { get; set; }
     public string? StaticStationsFile { get; set; }
     public string? StaticStationsUploadedFile { get; set; }
+    public string? StaticNorthTankFile { get; set; }
+    public string? StaticNorthTankUploadedFile { get; set; }
 }
