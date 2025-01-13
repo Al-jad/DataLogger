@@ -16,7 +16,8 @@ public sealed class PipesDataMap : ClassMap<PipesData>
         Map(m => m.Discharge).Name("Discharge_1");
         Map(m => m.Discharge2).Name("Discharge_2");
         Map(m => m.Pressure).Name("Pressure1");
-        Map(m => m.TankSensorReading).Name("TankSensorReading");
+        
+        // Map(m => m.TankSensorReading).Name("TankSensorReading");
 
         // Map(m => m.TankCurrentVol).Name("TotalVol");
 

@@ -110,30 +110,30 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider) : 
             
             var tankStations = await context.Stations.Where(x => x.StationType == Enums.StationType.Tank).ToListAsync(stoppingToken);
 
-            foreach (var station in tankStations)
-            {
-                if (File.Exists(station.DataFile))
-                {
-                    var tankData = PipesDataMap.ParseCsvFile(station.DataFile);
-                    
-                    foreach (var data in tankData)
-                    {
-                        data.StationId = station.Id;
-                        data.Station = station;
-                        data.WaterLevel = station.TankHeight - data.TankSensorReading;
-                        data.TankCurrentVol = station.BaseArea * (station.TankHeight - data.TankSensorReading);
-                    }
-
-                    context.PipesData.AddRange(tankData);
-                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
-
-                    if (isSaved && station.UploadedDataFile != null)
-                    {
-                        File.Move(station.DataFile,
-                            station.UploadedDataFile, true);
-                    }
-                };
-            }
+            // foreach (var station in tankStations)
+            // {
+            //     if (File.Exists(station.DataFile))
+            //     {
+            //         var tankData = PipesDataMap.ParseCsvFile(station.DataFile);
+            //         
+            //         foreach (var data in tankData)
+            //         {
+            //             data.StationId = station.Id;
+            //             data.Station = station;
+            //             data.WaterLevel = station.TankHeight - data.TankSensorReading;
+            //             data.TankCurrentVol = station.BaseArea * (station.TankHeight - data.TankSensorReading);
+            //         }
+            //
+            //         context.PipesData.AddRange(tankData);
+            //         var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
+            //
+            //         if (isSaved && station.UploadedDataFile != null)
+            //         {
+            //             File.Move(station.DataFile,
+            //                 station.UploadedDataFile, true);
+            //         }
+            //     };
+            // }
             // TODO: Tank worker
             
             _logger.LogInformation("starting to log data in {delay}ms", _appSettings.Delay);
