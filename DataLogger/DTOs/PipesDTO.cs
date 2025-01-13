@@ -28,6 +28,7 @@ namespace DataLogger.DTOs
         public float? DischargeInDay { get; set; }
         public float? TotalVolumePerHour { get; set; }
         public float? TotalVolumePerDay { get; set; }
+        public float? CurrentVolume { get; set; }
         public float? Pressure { get; set; }
         public float? WaterLevel { get; set; }
         public float? WaterQuality { get; set; }

@@ -189,7 +189,8 @@ namespace DataLogger.Controllers
                         Temperature = g.Average(p => p.Temperature),
                         Pressure = g.Average(p => p.Pressure),
                         Pressure2 = g.Average(p => p.Pressure2),
-                        WaterLevel = g.Average(p => p.WaterLevel),
+                        WaterLevel = g.Average(p => p.Station.TankHeight - p.WaterLevel),
+                        CurrentVolume = g.Average(p => (p.Station.TankHeight - p.WaterLevel) * p.Station.BaseArea),
                         WaterQuality = g.Average(p => p.WaterQuality)
                     }),
                 ByDuration.Day => baseQuery
@@ -203,7 +204,8 @@ namespace DataLogger.Controllers
                         Temperature = g.Average(p => p.Temperature),
                         Pressure = g.Average(p => p.Pressure),
                         Pressure2 = g.Average(p => p.Pressure2),
-                        WaterLevel = g.Average(p => p.WaterLevel),
+                        WaterLevel = g.Average(p => p.Station.TankHeight - p.WaterLevel),
+                        CurrentVolume = g.Average(p => (p.Station.TankHeight - p.WaterLevel) * p.Station.BaseArea),
                         WaterQuality = g.Average(p => p.WaterQuality)
                     }),
                 _ => baseQuery
@@ -216,7 +218,9 @@ namespace DataLogger.Controllers
                         x.Temperature,
                         x.Pressure,
                         x.Pressure2,
-                        x.WaterLevel,
+                        WaterLevel = x.Station.TankHeight - x.WaterLevel,
+                        CurrentVolume = (x.Station.TankHeight - x.WaterLevel) * x.Station.BaseArea,
+
                         x.WaterQuality
                     })
             };
@@ -272,7 +276,8 @@ namespace DataLogger.Controllers
                     DischargeInHour = hourlyDischarge,
                     DischargeInDay = dailyDischarge,
                     Pressure = record.Pressure,
-                    WaterLevel = record.WaterLevel,
+                    WaterLevel = record.Station.TankHeight - record.WaterLevel,
+                    CurrentVolume = (record.Station.TankHeight - record.WaterLevel) * record.Station.BaseArea,
                     WaterQuality = record.WaterQuality
                 });
             }
