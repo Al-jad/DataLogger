@@ -58,6 +58,12 @@ namespace DataLoggerDatabase.Migrations
                     b.Property<long>("StationId")
                         .HasColumnType("bigint");
 
+                    b.Property<float?>("TankCurrentVol")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("TankSensorReading")
+                        .HasColumnType("real");
+
                     b.Property<float?>("Temperature")
                         .HasColumnType("real");
 
@@ -93,6 +99,9 @@ namespace DataLoggerDatabase.Migrations
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<float?>("BaseArea")
+                        .HasColumnType("real");
 
                     b.Property<string>("City")
                         .HasMaxLength(40)
@@ -131,6 +140,9 @@ namespace DataLoggerDatabase.Migrations
 
                     b.Property<int>("StationType")
                         .HasColumnType("integer");
+
+                    b.Property<float>("TankHeight")
+                        .HasColumnType("real");
 
                     b.Property<string>("UploadedDataFile")
                         .HasColumnType("text");

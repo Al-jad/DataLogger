@@ -33,7 +33,6 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider) : 
 
             }
 
-            var stations = await context.Stations.Where(x => x.SourceAddress == _appSettings.SourceAddress).ToListAsync(stoppingToken);
 
             if (File.Exists(_appSettings.StaticStationsFile))
             {
@@ -82,31 +81,61 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider) : 
                 if (isSaved && _appSettings.StaticNorthTankUploadedFile != null)
                     File.Move(_appSettings.StaticNorthTankFile, _appSettings.StaticNorthTankUploadedFile, true);
             }
+            
+            // var stations = await context.Stations.Where(x => x.SourceAddress == _appSettings.SourceAddress).ToListAsync(stoppingToken);
+            //
+            // foreach (var station in stations)
+            // {
+            //     if (station.Id == 4 || station.Id == 5) continue;
+            //     if (File.Exists(station.DataFile))
+            //     {
+            //         var pipesData = PipesDataMap.ParseCsvFile(station.DataFile);
+            //
+            //         foreach (var data in pipesData)
+            //         {
+            //             data.StationId = station.Id;
+            //             data.Station = station;
+            //         }
+            //
+            //         context.PipesData.AddRange(pipesData);
+            //         var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
+            //
+            //         if (isSaved && station.UploadedDataFile != null)
+            //         {
+            //             File.Move(station.DataFile,
+            //                 station.UploadedDataFile, true);
+            //         }
+            //     };
+            // }
+            
+            var tankStations = await context.Stations.Where(x => x.StationType == Enums.StationType.Tank).ToListAsync(stoppingToken);
 
-            //foreach (var station in stations)
-            //{
-            //    if (station.Id == 4 || station.Id == 5) continue;
-            //    if (File.Exists(station.DataFile))
-            //    {
-            //        var pipesData = PipesDataMap.ParseCsvFile(station.DataFile);
+            foreach (var station in tankStations)
+            {
+                if (File.Exists(station.DataFile))
+                {
+                    var tankData = PipesDataMap.ParseCsvFile(station.DataFile);
+                    
+                    foreach (var data in tankData)
+                    {
+                        data.StationId = station.Id;
+                        data.Station = station;
+                        data.WaterLevel = station.TankHeight - data.TankSensorReading;
+                        data.TankCurrentVol = station.BaseArea * (station.TankHeight - data.TankSensorReading);
+                    }
 
-            //        foreach (var data in pipesData)
-            //        {
-            //            data.StationId = station.Id;
-            //            data.Station = station;
-            //        }
+                    context.PipesData.AddRange(tankData);
+                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
 
-            //        context.PipesData.AddRange(pipesData);
-            //        var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
-
-            //        if (isSaved && station.UploadedDataFile != null)
-            //        {
-            //            File.Move(station.DataFile,
-            //                station.UploadedDataFile, true);
-            //        }
-            //    };
-            //}
+                    if (isSaved && station.UploadedDataFile != null)
+                    {
+                        File.Move(station.DataFile,
+                            station.UploadedDataFile, true);
+                    }
+                };
+            }
             // TODO: Tank worker
+            
             _logger.LogInformation("starting to log data in {delay}ms", _appSettings.Delay);
             await Task.Delay(_appSettings.Delay, stoppingToken);
         }
@@ -122,4 +151,5 @@ internal class AppSettings
     public string? StaticStationsUploadedFile { get; set; }
     public string? StaticNorthTankFile { get; set; }
     public string? StaticNorthTankUploadedFile { get; set; }
+    public float? SensorDistance { get; set; }
 }

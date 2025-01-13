@@ -12,6 +12,8 @@ public class PipesData
     public float? Discharge2 { get; set; }
     public float? TotalVolumePerHour { get; set; }
     public float? TotalVolumePerDay { get; set; }
+    public float? TankCurrentVol { get; set; }
+    public float? TankSensorReading { get; set; }
     public float? Pressure { get; set; }
     public float? Pressure2 { get; set; }
     public float? Temperature { get; set; }
