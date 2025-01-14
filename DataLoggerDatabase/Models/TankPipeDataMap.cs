@@ -17,7 +17,7 @@ namespace DataLoggerDatabase.Models
             Map(m => m.WaterLevel).Name("Level");
         }
 
-        public static List<PipesData> ParseTankCsvFile(string filePath)
+        public static List<PipesData> ParseCsvFile(string filePath)
         {
             try
             {

@@ -41,14 +41,14 @@ public class WebSocketWorker : BackgroundService
                 var lastDay = record.TimeStamp.AddDays(-1);
 
                 var hourlyDischarge = await context.PipesData
-                    .Where(x => x.StationId == record.StationId 
-                        && x.TimeStamp >= lastHour 
+                    .Where(x => x.StationId == record.StationId
+                        && x.TimeStamp >= lastHour
                         && x.TimeStamp <= record.TimeStamp)
                     .SumAsync(x => x.Discharge ?? 0, stoppingToken);
 
                 var dailyDischarge = await context.PipesData
-                    .Where(x => x.StationId == record.StationId 
-                        && x.TimeStamp >= lastDay 
+                    .Where(x => x.StationId == record.StationId
+                        && x.TimeStamp >= lastDay
                         && x.TimeStamp <= record.TimeStamp)
                     .SumAsync(x => x.Discharge ?? 0, stoppingToken);
 
@@ -62,7 +62,8 @@ public class WebSocketWorker : BackgroundService
                     DischargeInHour = hourlyDischarge,
                     DischargeInDay = dailyDischarge,
                     Pressure = record.Pressure,
-                    WaterLevel = record.WaterLevel,
+                    WaterLevel = record.Station.TankHeight - record.WaterLevel,
+                    CurrentVolume = (record.Station.TankHeight - record.WaterLevel) * record.Station.BaseArea,
                     WaterQuality = record.WaterQuality
                 });
             }
