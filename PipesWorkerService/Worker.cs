@@ -2,7 +2,6 @@ using DataLoggerDatabase.Models;
 using DataLoggerDatabase;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-
 namespace PipesWorkerService;
 
 public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider) : BackgroundService
@@ -12,111 +11,100 @@ public class Worker(ILogger<Worker> logger, IServiceProvider serviceProvider) : 
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (_appSettings is null) throw new ArgumentNullException(nameof(_appSettings));
-
-        while (!stoppingToken.IsCancellationRequested)
+        _logger.LogInformation("Worker is starting");
+        try
         {
-            try
+            if (_appSettings is null) throw new ArgumentNullException(nameof(_appSettings));
+
+            while (!stoppingToken.IsCancellationRequested)
             {
-
-                using var scope = serviceProvider.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-
-                var query = context.Stations.AsQueryable().Any(
-                    station => station.SourceAddress == _appSettings.SourceAddress
-                );
-                if (!query)
+                try
                 {
-                    Console.WriteLine("Station not found, adding new station.");
-                    await context.Stations.AddRangeAsync(_appSettings.Stations, stoppingToken);
-                    await context.SaveChangesAsync(stoppingToken);
-                    var station = await context.Stations.FirstAsync(x => x.SourceAddress == _appSettings.SourceAddress, stoppingToken);
-                    await context.PipesData.Where(x => x.Station == null).ExecuteUpdateAsync(x => x.SetProperty(x => x.StationId, station.Id), stoppingToken);
+                    using var scope = serviceProvider.CreateScope();
+                    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                }
-
-                var stations = await context.Stations.Where(x => x.SourceAddress == _appSettings.SourceAddress).ToListAsync(stoppingToken);
-
-                if (File.Exists(_appSettings.StaticStationsFile))
-                {
-                    var pipesData = PipesDataMap.ParseCsvFile(_appSettings.StaticStationsFile);
-                    var staticStationsData = new List<PipesData>();
-
-                    foreach (var data in pipesData)
+                    var query = context.Stations.AsQueryable().Any(
+                        station => station.SourceAddress == _appSettings.SourceAddress
+                    );
+                    if (!query)
                     {
-                        var dischargePressureData = new PipesData
+                        Console.WriteLine("Station not found, adding new station.");
+                        await context.Stations.AddRangeAsync(_appSettings.Stations, stoppingToken);
+                        await context.SaveChangesAsync(stoppingToken);
+                        var station = await context.Stations.FirstAsync(x => x.SourceAddress == _appSettings.SourceAddress, stoppingToken);
+                        await context.PipesData.Where(x => x.Station == null).ExecuteUpdateAsync(x => x.SetProperty(x => x.StationId, station.Id), stoppingToken);
+
+                    }
+
+                    var stations = await context.Stations.Where(x => x.SourceAddress == _appSettings.SourceAddress).ToListAsync(stoppingToken);
+
+                    if (File.Exists(_appSettings.StaticStationsFile))
+                    {
+                        var pipesData = PipesDataMap.ParseCsvFile(_appSettings.StaticStationsFile);
+                        var staticStationsData = new List<PipesData>();
+
+                        foreach (var data in pipesData)
                         {
-                            StationId = 4,
-                            Discharge = data.Discharge,
-                            Pressure = data.Pressure,
-                            TimeStamp = data.TimeStamp
-                        };
-                        staticStationsData.Add(dischargePressureData);
+                            var dischargePressureData = new PipesData
+                            {
+                                StationId = 4,
+                                Discharge = data.Discharge,
+                                Pressure = data.Pressure,
+                                TimeStamp = data.TimeStamp
+                            };
+                            staticStationsData.Add(dischargePressureData);
 
-                        var discharge2Data = new PipesData
+                            var discharge2Data = new PipesData
+                            {
+                                StationId = 5,
+                                Discharge = data.Discharge2,
+                                TimeStamp = data.TimeStamp
+                            };
+                            staticStationsData.Add(discharge2Data);
+                        }
+                        context.PipesData.AddRange(staticStationsData);
+                        var changesCount = await context.SaveChangesAsync(stoppingToken);
+
+                        _logger.LogInformation("Added {count} Pipe Data at {time}", changesCount, DateTimeOffset.Now);
+
+                        if (changesCount > 0 && _appSettings.StaticStationsUploadedFile != null)
                         {
-                            StationId = 5,
-                            Discharge = data.Discharge2,
-                            TimeStamp = data.TimeStamp
-                        };
-                        staticStationsData.Add(discharge2Data);
+                            File.Move(_appSettings.StaticStationsFile,
+                                _appSettings.StaticStationsUploadedFile, true);
+                        }
                     }
-                    context.PipesData.AddRange(staticStationsData);
-                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
 
-                    if (isSaved && _appSettings.StaticStationsUploadedFile != null)
+                    if (File.Exists(_appSettings.StaticNorthTankFile))
                     {
-                        File.Move(_appSettings.StaticStationsFile,
-                            _appSettings.StaticStationsUploadedFile, true);
-                    }
-                }
+                        var pipesData = TankPipeDataMap.ParseCsvFile(_appSettings.StaticNorthTankFile);
+                        foreach (var item in pipesData)
+                        {
+                            item.StationId = 6;
+                        }
+                        context.PipesData.AddRange(pipesData);
+                        var changesCount = await context.SaveChangesAsync(stoppingToken);
 
-                if (File.Exists(_appSettings.StaticNorthTankFile))
+                        _logger.LogInformation("Added {count} Tank Data at {time}", changesCount, DateTimeOffset.Now);
+
+                        if (changesCount > 0 && _appSettings.StaticNorthTankUploadedFile != null)
+                            File.Move(_appSettings.StaticNorthTankFile, _appSettings.StaticNorthTankUploadedFile, true);
+                    }
+                    _logger.LogInformation("starting to log data in {delay}ms", _appSettings.Delay);
+                }
+                catch (Exception ex)
                 {
-                    var pipesData = TankPipeDataMap.ParseCsvFile(_appSettings.StaticNorthTankFile);
-                    foreach (var item in pipesData)
-                    {
-                        item.StationId = 6;
-                    }
-                    context.PipesData.AddRange(pipesData);
-                    var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
-
-                    if (isSaved && _appSettings.StaticNorthTankUploadedFile != null)
-                        File.Move(_appSettings.StaticNorthTankFile, _appSettings.StaticNorthTankUploadedFile, true);
+                    _logger.LogError(ex.Message, ex);
                 }
-
-                //foreach (var station in stations)
-                //{
-                //    if (station.Id == 4 || station.Id == 5) continue;
-                //    if (File.Exists(station.DataFile))
-                //    {
-                //        var pipesData = PipesDataMap.ParseCsvFile(station.DataFile);
-
-                //        foreach (var data in pipesData)
-                //        {
-                //            data.StationId = station.Id;
-                //            data.Station = station;
-                //        }
-
-                //        context.PipesData.AddRange(pipesData);
-                //        var isSaved = await context.SaveChangesAsync(stoppingToken) > 0;
-
-                //        if (isSaved && station.UploadedDataFile != null)
-                //        {
-                //            File.Move(station.DataFile,
-                //                station.UploadedDataFile, true);
-                //        }
-                //    };
-                //}
-                // TODO: Tank worker
-                _logger.LogInformation("starting to log data in {delay}ms", _appSettings.Delay);
+                await Task.Delay(_appSettings.Delay, stoppingToken);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message, ex);
-            }
-            await Task.Delay(_appSettings.Delay, stoppingToken);
+        }
+        catch (Exception) when (stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("Sender is stopping");
+        }
+        catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+        {
+            _logger.LogError(ex, "Sender had error");
         }
     }
 }
