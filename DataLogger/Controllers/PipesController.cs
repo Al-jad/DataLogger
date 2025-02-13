@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using DataLogger.DTOs;
 using Microsoft.EntityFrameworkCore;
 using static DataLoggerDatabase.Enums;
+using static DataLoggerDatabase.AppDbContext;
 
 namespace DataLogger.Controllers
 {
@@ -179,7 +180,7 @@ namespace DataLogger.Controllers
             var query = byDuration switch
             {
                 ByDuration.Hour => baseQuery
-                    .GroupBy(p => new DateTime(p.TimeStamp.Year, p.TimeStamp.Month, p.TimeStamp.Day, p.TimeStamp.Hour, 0, 0))
+                    .GroupBy(p => DateTrunc(TruncField.hour, p.TimeStamp))
                     .Select(g => new
                     {
                         Date = g.Key,
@@ -224,8 +225,13 @@ namespace DataLogger.Controllers
                         x.WaterQuality
                     })
             };
-            
-            var count = await query.CountAsync();
+
+            int count = byDuration switch
+            {
+                ByDuration.Hour => await baseQuery.GroupBy(p => DateTrunc(TruncField.hour, p.TimeStamp)).CountAsync(),
+                ByDuration.Day => await baseQuery.GroupBy(p => p.TimeStamp.Date).CountAsync(),
+                _ => await baseQuery.CountAsync()
+            };
 
             var data = await query
                 .OrderByDescending(x => x.Date)
