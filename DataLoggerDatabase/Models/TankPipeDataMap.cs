@@ -9,12 +9,13 @@ namespace DataLoggerDatabase.Models
         public TankPipeDataMap()
         {
             //"TMSTAMP","RECNBR","BattV","PTemp_C","Level"
+            //"TMSTAMP","RECNBR","BattV","PTemp_C","WATER_LEVEL_1","WATER_LEVEL_1_PERCENTAGE","WATER_LEVEL_2_SUMLEVEL","WATER_LEVEL_PERCENTAGE_2_SUMLEVEL"
             // Map(m => m.TimeStamp).Name("TIMESTAMP");
             Map(m => m.TimeStamp).Convert(row => DateTime.SpecifyKind(DateTime.Parse(row.Row.GetField(0)!).AddHours(-3), DateTimeKind.Utc));
             Map(m => m.Record).Name("RECNBR");
             Map(m => m.BatteryVoltage).Name("BattV");
             Map(m => m.Temperature).Name("PTemp_C");
-            Map(m => m.WaterLevel).Name("Level");
+            Map(m => m.WaterLevel).Name("WATER_LEVEL_2_SUMLEVEL");
         }
 
         public static List<PipesData> ParseCsvFile(string filePath)
