@@ -281,8 +281,8 @@ namespace DataLogger.Controllers
                     DischargeInHour = hourlyDischarge,
                     DischargeInDay = dailyDischarge,
                     Pressure = record.Pressure,
-                    WaterLevel = record.Station.TankHeight - record.WaterLevel,
-                    CurrentVolume = (record.Station.TankHeight - record.WaterLevel) * record.Station.BaseArea,
+                    WaterLevel = record.WaterLevel,
+                    CurrentVolume = record.WaterLevel * record.Station.BaseArea,
                     WaterQuality = record.WaterQuality
                 });
             }
