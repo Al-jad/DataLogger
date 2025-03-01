@@ -5,6 +5,7 @@ using DataLogger.DTOs;
 using Microsoft.EntityFrameworkCore;
 using static DataLoggerDatabase.Enums;
 using static DataLoggerDatabase.AppDbContext;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DataLogger.Controllers
 {
@@ -161,6 +162,7 @@ namespace DataLogger.Controllers
             return Ok(new { count, data });
         }
 
+        [Authorize]
         [HttpGet("realtime")]
         public async Task<IActionResult> GetHourlyRecords(long stationId, ByDuration byDuration, DateTime? fromDate, DateTime? toDate, int skip, int take = 10)
         {
@@ -241,6 +243,7 @@ namespace DataLogger.Controllers
             return Ok(new { count, data });
         }
 
+        [Authorize]
         [HttpGet(template: "latest_data")]
         public async Task<IActionResult> GetLatestData()
         {
