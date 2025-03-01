@@ -1,11 +1,7 @@
 using DataLoggerDatabase.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using DataLoggerDatabase;
-
-using System.Linq;
 using DataLogger.DTOs;
-using DataLoggerDatabase.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataLogger.Controllers

@@ -1,18 +1,14 @@
 using DataLoggerDatabase.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using System.Text;
 using static DataLoggerDatabase.Enums;
 
 namespace DataLoggerDatabase
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<AppUser, IdentityRole<long>, long>(options)
     {
-        // Define a constructor that accepts DbContextOptions
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
-        }
-
         // Define your DbSets for each model
         public DbSet<PipesData> PipesData { get; set; }
         public DbSet<Station> Stations { get; set; }
@@ -24,6 +20,8 @@ namespace DataLoggerDatabase
         {
             modelBuilder.HasPostgresEnum<StationType>();
             modelBuilder.HasDbFunction(DateTruncMethod).HasName("date_trunc");
+
+            base.OnModelCreating(modelBuilder);
         }
 
         private static readonly MethodInfo DateTruncMethod = typeof(AppDbContext).GetRuntimeMethod(nameof(DateTrunc), [typeof(string), typeof(DateTime)])!;
