@@ -193,7 +193,6 @@ namespace DataLogger.Controllers
                         Pressure = g.Average(p => p.Pressure),
                         Pressure2 = g.Average(p => p.Pressure2),
                         WaterLevel = g.Average(p => p.WaterLevel),
-                        CurrentVolume = g.Average(p => (p.WaterLevel) * p.Station.BaseArea),
                         WaterQuality = g.Average(p => p.WaterQuality)
                     }),
                 ByDuration.Day => baseQuery
@@ -208,7 +207,6 @@ namespace DataLogger.Controllers
                         Pressure = g.Average(p => p.Pressure),
                         Pressure2 = g.Average(p => p.Pressure2),
                         WaterLevel = g.Average(p => p.WaterLevel),
-                        CurrentVolume = g.Average(p => p.WaterLevel * p.Station.BaseArea),
                         WaterQuality = g.Average(p => p.WaterQuality)
                     }),
                 _ => baseQuery
@@ -222,7 +220,6 @@ namespace DataLogger.Controllers
                         x.Pressure,
                         x.Pressure2,
                         x.WaterLevel,
-                        CurrentVolume = x.WaterLevel * x.Station.BaseArea,
                         x.WaterQuality
                     })
             };
