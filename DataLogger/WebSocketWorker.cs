@@ -62,7 +62,7 @@ public class WebSocketWorker : BackgroundService
                     DischargeInHour = hourlyDischarge,
                     DischargeInDay = dailyDischarge,
                     Pressure = record.Pressure,
-                    WaterLevel = record.Station.TankHeight - record.WaterLevel,
+                    WaterLevel = record.WaterLevel,
                     CurrentVolume = (record.Station.TankHeight - record.WaterLevel) * record.Station.BaseArea,
                     WaterQuality = record.WaterQuality
                 });
