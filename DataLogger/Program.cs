@@ -81,7 +81,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ValidateIssuer = false,
             ValidateIssuerSigningKey = true,
-            ValidateLifetime = true
+            ValidateLifetime = false
         };
 
         options.Events = new JwtBearerEvents
